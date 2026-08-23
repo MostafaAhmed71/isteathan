@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1f3f" />
+    <title>استئذان — بدون اتصال</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0b1f3f;
+        color: #f2f6fc;
+        font-family: Cairo, 'Segoe UI', Tahoma, sans-serif;
+        padding: 1.5rem;
+        text-align: center;
+      }
+      main {
+        max-width: 22rem;
+        background: rgba(11, 31, 63, 0.88);
+        border: 1px solid rgba(212, 175, 55, 0.55);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+      }
+      img {
+        width: 5.5rem;
+        height: 5.5rem;
+        border-radius: 999px;
+        border: 2px solid #d4af37;
+        object-fit: cover;
+        background: #fff;
+        margin: 0 auto 0.75rem;
+        display: block;
+      }
+      .school {
+        margin: 0 0 0.75rem;
+        color: #d4af37;
+        font-weight: 700;
+        font-size: 0.95rem;
+        line-height: 1.45;
+      }
+      h1 {
+        margin: 0 0 0.75rem;
+        font-size: 1.5rem;
+        color: #fff;
+      }
+      p {
+        margin: 0 0 1.25rem;
+        color: #9bb0cb;
+        line-height: 1.6;
+      }
+      button {
+        font: inherit;
+        min-height: 48px;
+        min-width: 10rem;
+        padding: 0.65rem 1.25rem;
+        border: 1px solid #a88b1f;
+        border-radius: 10px;
+        background: #d4af37;
+        color: #0b1f3f;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #e6c04a;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/school-logo.jpeg" alt="مدارس نخبة الشمال الأهلية" width="88" height="88" />
+      <p class="school">مدارس نخبة الشمال الأهلية</p>
+      <h1>لا يوجد اتصال بالإنترنت</h1>
+      <p>استئذان يحتاج اتصالاً لإرسال وعرض الطلبات.</p>
+      <button type="button" onclick="location.reload()">إعادة المحاولة</button>
+    </main>
+  </body>
+</html>

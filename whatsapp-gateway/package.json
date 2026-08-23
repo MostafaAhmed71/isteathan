@@ -1,0 +1,11 @@
+{
+  "name": "isteathan-whatsapp-gateway",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@wppconnect-team/wppconnect": "2.2.4"
+  }
+}

@@ -1,0 +1,16 @@
+[Unit]
+Description=ELITE WhatsApp Gateway
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ELITE/whatsapp-gateway
+EnvironmentFile=/opt/ELITE/.env
+ExecStart=/usr/bin/node /opt/ELITE/whatsapp-gateway/server.mjs
+Restart=always
+RestartSec=8
+User=root
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

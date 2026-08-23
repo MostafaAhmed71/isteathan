@@ -1,0 +1,39 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+.dev-server.log
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+
+# Env and secrets
+.env
+.env.*.local
+class-staff-credentials.csv
+*.deb
+
+# WhatsApp gateway session
+whatsapp-gateway/tokens
+whatsapp-gateway/node_modules
+
+# Upstream library clone (not part of the app)
+wppconnect/
+
+# TypeScript
+*.tsbuildinfo
+
+# Supabase CLI cache
+supabase/.temp/

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="استئذان">
+  <rect width="512" height="512" fill="#0b1c3f"/>
+  <rect x="96" y="120" width="320" height="272" rx="28" fill="rgba(15,42,92,0.95)" stroke="#c9a227" stroke-width="8"/>
+  <rect x="144" y="176" width="224" height="28" rx="8" fill="#c9a227"/>
+  <rect x="144" y="232" width="160" height="20" rx="6" fill="#a8b6cc"/>
+  <rect x="144" y="276" width="192" height="20" rx="6" fill="#a8b6cc"/>
+  <circle cx="368" cy="328" r="36" fill="#c9a227"/>
+  <path d="M352 328 l12 12 24-28" fill="none" stroke="#0b1c3f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
