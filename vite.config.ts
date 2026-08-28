@@ -37,11 +37,19 @@ export default defineConfig(({ mode }) => {
       srcDir: 'src',
       filename: 'sw.ts',
       registerType: 'autoUpdate',
-      includeAssets: ['offline.html', 'icons/*.png', 'favicon.svg', 'school-logo.jpeg'],
+      includeAssets: [
+        'offline.html',
+        'icons/*.png',
+        'favicon.ico',
+        'favicon-16.png',
+        'favicon-32.png',
+        'apple-touch-icon.png',
+        'school-logo.jpeg',
+      ],
       manifest: {
-        name: 'استئذان — نخبة الشمال الأهلية',
-        short_name: 'استئذان',
-        description: 'نظام استئذان — مدارس نخبة الشمال الأهلية',
+        name: 'خروج — نخبة الشمال الأهلية',
+        short_name: 'خروج',
+        description: 'نظام خروج — مدارس نخبة الشمال الأهلية',
         lang: 'ar',
         dir: 'rtl',
         display: 'standalone',
@@ -77,9 +85,8 @@ export default defineConfig(({ mode }) => {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
       devOptions: {
-        // Needed so mobile can show notifications via ServiceWorkerRegistration.showNotification
-        enabled: true,
-        type: 'module',
+        // Never enable SW in Vite dev — CacheFirst poisons HMR and causes duplicate React.
+        enabled: false,
       },
     }),
   ],

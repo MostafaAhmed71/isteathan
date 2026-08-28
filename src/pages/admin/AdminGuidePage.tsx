@@ -6,7 +6,7 @@ import { APP_NAME, SCHOOL_LOGO_SRC, SCHOOL_NAME } from '../../lib/brand'
 const sections = [
   { id: 'overview', title: 'نظرة عامة' },
   { id: 'roles', title: 'أنواع الحسابات' },
-  { id: 'flow', title: 'مسار طلب الاستئذان' },
+  { id: 'flow', title: 'مسار طلب الخروج' },
   { id: 'admin', title: 'شاشة المدير' },
   { id: 'staff', title: 'حسابات الفصول' },
   { id: 'parent', title: 'واجهة ولي الأمر' },
@@ -116,10 +116,10 @@ export function AdminGuidePage() {
           <GuideSection id="overview" title="نظرة عامة">
             <p>
               منصة <strong>{APP_NAME}</strong> تطبيق ويب عربي (من اليمين لليسار) لإدارة طلبات
-              استئذان الطلاب في <strong>{SCHOOL_NAME}</strong>.
+              خروج الطلاب في <strong>{SCHOOL_NAME}</strong>.
             </p>
             <ul className="list-inside list-disc space-y-1 text-[var(--color-muted)]">
-              <li>ولي الأمر يرسل طلب استئذان لابنه المرتبط بحسابه.</li>
+              <li>ولي الأمر يرسل طلب خروج لابنه المرتبط بحسابه.</li>
               <li>مشرف الفصل يراجع الطلب ويوافق أو يرفض.</li>
               <li>المدير يدير الفصول والطلاب وأولياء الأمور والحسابات والطلبات.</li>
               <li>التنبيهات تصل عند وصول طلب جديد أو صدور قرار.</li>
@@ -165,14 +165,14 @@ export function AdminGuidePage() {
             </p>
           </GuideSection>
 
-          <GuideSection id="flow" title="مسار طلب الاستئذان">
+          <GuideSection id="flow" title="مسار طلب الخروج">
             <ol className="list-inside list-decimal space-y-2 text-[var(--color-muted)]">
               <li>
                 المدير يضيف الطلاب ويربطهم بفصول، أو يستوردهم جماعيًا، ويضمن وجود حساب مشرف لكل
                 فصل.
               </li>
               <li>ولي الأمر يسجّل حسابه ويربط ابنه برقم هوية الطالب المسجّل لدى المدرسة.</li>
-              <li>من الصفحة الرئيسية يضغط «طلب استئذان» ثم يؤكد الإرسال.</li>
+              <li>من الصفحة الرئيسية يضغط «طلب خروج» ثم يؤكد الإرسال.</li>
               <li>يظهر الطلب لدى مشرف الفصل المعني مباشرة (مع إشعار إن كانت الإشعارات مفعّلة).</li>
               <li>المشرف يوافق أو يرفض (مع سبب عند الرفض).</li>
               <li>ولي الأمر يتابع الحالة عبر شريط التتبع ويصله إشعار بالقرار.</li>
@@ -265,7 +265,7 @@ export function AdminGuidePage() {
               </li>
               <li>
                 الصفحة الرئيسية: تفعيل الإشعارات، ربط ابن برقم الهوية، قائمة الأبناء مع زر «طلب
-                استئذان» واضح.
+                خروج» واضح.
               </li>
               <li>سجل الطلبات: تتبع كل طلب خطوة بخطوة (أُرسل → قيد المراجعة → قرار).</li>
               <li>
@@ -326,7 +326,7 @@ export function AdminGuidePage() {
                   </tr>
                   <tr className="border-b border-[rgba(255,255,255,0.06)]">
                     <td className="px-2 py-2 font-bold text-[var(--color-text)]">تمت الموافقة</td>
-                    <td className="px-2 py-2">وافق المشرف على خروج / استئذان الطالب</td>
+                    <td className="px-2 py-2">وافق المشرف على خروج الطالب</td>
                   </tr>
                   <tr className="border-b border-[rgba(255,255,255,0.06)]">
                     <td className="px-2 py-2 font-bold text-[var(--color-text)]">تم الرفض</td>

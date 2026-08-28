@@ -1,4 +1,4 @@
-import { type FormEvent, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { RequestStatusTracker } from '../../components/RequestStatusTracker'
 import {
@@ -7,7 +7,6 @@ import {
   PageShell,
   PrimaryButton,
   SecondaryButton,
-  TextField,
 } from '../../components/ui'
 import { useAuth } from '../../lib/auth'
 import { getNotificationPermission, permissionHelpMessage } from '../../lib/notify'
@@ -16,22 +15,17 @@ import { supabase } from '../../lib/supabase'
 import { classLabel, type PermissionRequest, type Student } from '../../lib/types'
 
 export function ParentHomePage() {
-  const { profile, signOut } = useAuth()
+  const { profile } = useAuth()
   const [students, setStudents] = useState<Student[]>([])
   const [latestByStudent, setLatestByStudent] = useState<Record<string, PermissionRequest>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [linkId, setLinkId] = useState('')
-  const [linkError, setLinkError] = useState('')
-  const [linkInfo, setLinkInfo] = useState('')
-  const [linking, setLinking] = useState(false)
   const [confirmStudent, setConfirmStudent] = useState<Student | null>(null)
   const [sendingId, setSendingId] = useState<string | null>(null)
   const [requestInfo, setRequestInfo] = useState('')
   const [requestError, setRequestError] = useState('')
   const [notifyReady, setNotifyReady] = useState(false)
   const [notifyHint, setNotifyHint] = useState('')
-  const [showLinkForm, setShowLinkForm] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -110,33 +104,6 @@ export function ParentHomePage() {
     }
   }
 
-  async function onLink(e: FormEvent) {
-    e.preventDefault()
-    setLinkError('')
-    setLinkInfo('')
-    const nid = linkId.trim()
-    if (!nid) {
-      setLinkError('أدخل رقم هوية الطالب.')
-      return
-    }
-    setLinking(true)
-    const { data, error: err } = await supabase.rpc('link_student_by_national_id', {
-      p_national_id: nid,
-    })
-    setLinking(false)
-    if (err) {
-      const msg = err.message
-      if (msg.includes('لا يوجد طالب')) setLinkError(msg)
-      else if (msg.includes('مرتبط')) setLinkError(msg)
-      else setLinkError('تعذر ربط الطالب. تحقق من رقم الهوية.')
-      return
-    }
-    setLinkId('')
-    setLinkInfo(`تم ربط الطالب: ${(data as Student)?.full_name ?? ''}`)
-    setShowLinkForm(false)
-    await load()
-  }
-
   async function sendRequest(student: Student) {
     setRequestError('')
     setRequestInfo('')
@@ -150,7 +117,7 @@ export function ParentHomePage() {
     if (err) {
       setRequestError(
         err.message.includes('قيد الانتظار')
-          ? 'يوجد بالفعل طلب استئذان قيد الانتظار لهذا الطالب.'
+          ? 'يوجد بالفعل طلب خروج قيد الانتظار لهذا الطالب.'
           : 'حدث خطأ أثناء إرسال الطلب.',
       )
       return
@@ -159,36 +126,18 @@ export function ParentHomePage() {
     if (requestId) {
       void notifyStaffOfNewRequest(requestId)
     }
-    setRequestInfo(`تم إرسال طلب استئذان لـ ${student.full_name} بنجاح. الحالة: قيد الانتظار.`)
+    setRequestInfo(`تم إرسال طلب خروج لـ ${student.full_name} بنجاح. الحالة: قيد الانتظار.`)
     await load()
   }
 
   return (
-    <PageShell
-      title={`مرحبًا، ${profile?.full_name ?? ''}`}
-      subtitle="أبناؤك وطلبات الاستئذان"
-      actions={
-        <div className="flex shrink-0 gap-2">
-          <Link to="/parent/requests">
-            <SecondaryButton type="button">سجل الطلبات</SecondaryButton>
-          </Link>
-          <SecondaryButton type="button" onClick={() => void signOut()}>
-            خروج
-          </SecondaryButton>
-        </div>
-      }
-    >
-      {/* Status messages first */}
+    <PageShell title={`مرحبًا، ${profile?.full_name ?? ''}`} subtitle="أرسل طلب خروج لأبنائك">
       <div className="mb-4 space-y-2">
         <ErrorBox message={requestError || error} />
         {requestInfo ? <p className="text-sm text-[var(--color-gold-soft)]">{requestInfo}</p> : null}
-        {linkInfo && !showLinkForm ? (
-          <p className="text-sm text-[var(--color-gold-soft)]">{linkInfo}</p>
-        ) : null}
         {notifyHint ? <p className="text-sm text-[var(--color-gold-soft)]">{notifyHint}</p> : null}
       </div>
 
-      {/* Secondary actions — full width on mobile */}
       <div className="mb-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {!notifyReady ? (
           <SecondaryButton type="button" full onClick={() => void enableNotifications()}>
@@ -199,41 +148,12 @@ export function ParentHomePage() {
             الإشعارات مفعّلة
           </div>
         )}
-        <SecondaryButton
-          type="button"
-          full
-          onClick={() => {
-            setShowLinkForm((open) => !open)
-            setLinkError('')
-            if (showLinkForm) setLinkInfo('')
-          }}
-        >
-          {showLinkForm ? 'إغلاق الربط' : 'ربط ابن برقم الهوية'}
-        </SecondaryButton>
+        <Link to="/parent/children" className="block">
+          <SecondaryButton type="button" full>
+            إدارة أبنائي
+          </SecondaryButton>
+        </Link>
       </div>
-
-      {showLinkForm ? (
-        <form onSubmit={onLink} className="mb-6 glass-panel p-4">
-          <h2 className="mb-1 font-bold text-[var(--color-text)]">ربط ابن</h2>
-          <p className="mb-4 text-sm text-[var(--color-muted)]">
-            أدخل رقم هوية الطالب المسجّل لدى المدرسة.
-          </p>
-          <div className="space-y-3">
-            <TextField
-              label="رقم هوية الطالب"
-              value={linkId}
-              onChange={(e) => setLinkId(e.target.value)}
-              inputMode="numeric"
-              required
-              autoFocus
-            />
-            <PrimaryButton type="submit" full disabled={linking}>
-              {linking ? 'جاري الربط...' : 'ربط الطالب'}
-            </PrimaryButton>
-            <ErrorBox message={linkError} />
-          </div>
-        </form>
-      ) : null}
 
       {loading ? <p className="text-[var(--color-muted)]">جاري التحميل...</p> : null}
 
@@ -241,7 +161,7 @@ export function ParentHomePage() {
         <EmptyState>
           لا يوجد أبناء مرتبطون بهذا الحساب.
           <br />
-          اضغط «ربط ابن برقم الهوية» أعلاه للبدء.
+          اذهب إلى تبويب «أبنائي» لإضافة ابن برقم الهوية.
         </EmptyState>
       ) : null}
 
@@ -276,7 +196,7 @@ export function ParentHomePage() {
               {confirmStudent?.id === s.id ? (
                 <div className="space-y-3 rounded-xl border border-[rgba(212,175,55,0.5)] p-3">
                   <p className="font-medium text-[var(--color-text)]">
-                    تأكيد إرسال طلب استئذان لـ {s.full_name}؟
+                    تأكيد إرسال طلب خروج لـ {s.full_name}؟
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     <SecondaryButton type="button" full onClick={() => setConfirmStudent(null)}>
@@ -304,7 +224,7 @@ export function ParentHomePage() {
                     setConfirmStudent(s)
                   }}
                 >
-                  {pending ? 'طلب قيد المراجعة' : 'طلب استئذان'}
+                  {pending ? 'طلب قيد المراجعة' : 'طلب خروج'}
                 </PrimaryButton>
               )}
             </article>

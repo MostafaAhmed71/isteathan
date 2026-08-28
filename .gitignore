@@ -37,3 +37,13 @@ wppconnect/
 
 # Supabase CLI cache
 supabase/.temp/
+
+# Capacitor / Xcode
+.capacitor/
+ios/App/Pods
+ios/App/build
+ios/App/App/public
+ios/App/output
+ios/DerivedData
+**/xcuserdata/
+*.xcuserstate

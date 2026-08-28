@@ -21,12 +21,12 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const FORCE = process.argv.includes('--force')
 
 const GRADE_LABELS = {
-  1: 'الأول',
-  2: 'الثاني',
-  3: 'الثالث',
-  4: 'الرابع',
-  5: 'الخامس',
-  6: 'السادس',
+  1: 'الأول الابتدائي',
+  2: 'الثاني الابتدائي',
+  3: 'الثالث الابتدائي',
+  4: 'الرابع الابتدائي',
+  5: 'الخامس الابتدائي',
+  6: 'السادس الابتدائي',
 }
 
 const SECTION_ORDER = { أ: 0, ب: 1, ج: 2, د: 3 }

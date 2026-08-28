@@ -86,13 +86,18 @@ Deno.serve(async (req) => {
         failures.push({ id, error: "الحساب غير موجود." });
         continue;
       }
-      if (profile.role !== "CLASS_STAFF") {
-        failures.push({ id, error: "يُسمح بحذف حسابات الفصول فقط." });
+      if (profile.role !== "CLASS_STAFF" && profile.role !== "PARENT") {
+        failures.push({ id, error: "يُسمح بحذف حسابات الفصول وأولياء الأمور فقط." });
         continue;
       }
 
-      await admin.from("classes").update({ staff_profile_id: null }).eq("staff_profile_id", id);
-      await admin.from("permission_requests").update({ decided_by: null }).eq("decided_by", id);
+      if (profile.role === "CLASS_STAFF") {
+        await admin.from("classes").update({ staff_profile_id: null }).eq("staff_profile_id", id);
+        await admin.from("permission_requests").update({ decided_by: null }).eq("decided_by", id);
+      } else {
+        await admin.from("students").update({ guardian_id: null }).eq("guardian_id", id);
+        await admin.from("permission_requests").delete().eq("guardian_id", id);
+      }
       await admin.from("push_subscriptions").delete().eq("user_id", id);
 
       const { error: profileErr } = await admin.from("profiles").delete().eq("id", id);

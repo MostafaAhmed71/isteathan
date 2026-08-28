@@ -76,8 +76,8 @@ Deno.serve(async (req) => {
       request.status === 'APPROVED' ? 'تمت الموافقة على الطلب' : 'تم رفض الطلب'
     const bodyText =
       request.status === 'APPROVED'
-        ? `تمت الموافقة على طلب استئذان ${studentName}.`
-        : `تم رفض طلب استئذان ${studentName}${
+        ? `تمت الموافقة على طلب خروج ${studentName}.`
+        : `تم رفض طلب خروج ${studentName}${
             request.rejection_reason ? `: ${request.rejection_reason}` : '.'
           }`
 

@@ -1,4 +1,5 @@
 import { type FormEvent, useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Toast } from '../../components/Toast'
 import { useAuth } from '../../lib/auth'
 import {
@@ -123,7 +124,7 @@ export function ClassDashboardPage() {
                 if (student?.full_name) studentName = student.full_name
               }
               alertNewPermissionRequest(studentName)
-              setToast(`وصل طلب استئذان جديد للطالب: ${studentName}`)
+              setToast(`وصل طلب خروج جديد للطالب: ${studentName}`)
               await load(data.id)
             })()
           },
@@ -197,9 +198,12 @@ export function ClassDashboardPage() {
 
       <PageShell
         title={schoolClass ? classLabel(schoolClass.grade, schoolClass.section) : 'الفصل'}
-        subtitle="طلبات الاستئذان"
+        subtitle="طلبات الخروج"
         actions={
           <div className="flex flex-wrap gap-2">
+            <Link to="/display/class">
+              <SecondaryButton type="button">شاشة العرض</SecondaryButton>
+            </Link>
             {!notifyReady ? (
               <SecondaryButton type="button" onClick={() => void enableNotifications()}>
                 تفعيل الإشعارات
@@ -210,7 +214,7 @@ export function ClassDashboardPage() {
               </span>
             )}
             <SecondaryButton type="button" onClick={() => void signOut()}>
-              خروج
+              تسجيل الخروج
             </SecondaryButton>
           </div>
         }
@@ -221,7 +225,7 @@ export function ClassDashboardPage() {
         <section className="mb-8">
           <h2 className="mb-3 text-lg font-bold text-[var(--color-gold)]">قيد الانتظار</h2>
           {!loading && pending.length === 0 ? (
-            <EmptyState>لا توجد طلبات استئذان معلقة.</EmptyState>
+            <EmptyState>لا توجد طلبات خروج معلقة.</EmptyState>
           ) : null}
           <div className="space-y-3">
             {pending.map((r) => (
@@ -268,7 +272,7 @@ export function ClassDashboardPage() {
                 {confirmApproveId === r.id ? (
                   <div className="mt-4 rounded-lg glass-panel-soft p-3">
                     <p className="font-medium">
-                      هل تريد الموافقة على استئذان {r.students?.full_name}؟
+                      هل تريد الموافقة على خروج {r.students?.full_name}؟
                     </p>
                     <div className="mt-3 flex gap-2">
                       <SecondaryButton type="button" onClick={() => setConfirmApproveId(null)}>

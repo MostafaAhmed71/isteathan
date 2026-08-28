@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { ErrorBox, PrimaryButton, TextField } from '../../components/ui'
-import { classLabel, type SchoolClass } from '../../lib/types'
+import { classLabel, GRADE_LABELS, type SchoolClass } from '../../lib/types'
 import { sortClasses } from '../../lib/classStaff'
 
 type ClassContact = {
@@ -37,11 +37,10 @@ const WEEKDAYS = [
   { value: 6, label: 'السبت' },
 ]
 
-const UPPER_GRADES = [
-  { grade: 4, title: 'الصف الرابع' },
-  { grade: 5, title: 'الصف الخامس' },
-  { grade: 6, title: 'الصف السادس' },
-]
+const UPPER_GRADES = [4, 5, 6].map((grade) => ({
+  grade,
+  title: `الصف ${GRADE_LABELS[grade]}`,
+}))
 
 export function AdminWhatsAppPage() {
   const [contacts, setContacts] = useState<ClassContact[]>([])
@@ -151,16 +150,18 @@ export function AdminWhatsAppPage() {
     )
     setSavingGrade(null)
     if (err) setError(err.message)
-    else setInfo(`تم حفظ جدول الصف ${grade === 4 ? 'الرابع' : grade === 5 ? 'الخامس' : 'السادس'}.`)
+    else setInfo(`تم حفظ جدول الصف ${GRADE_LABELS[grade] ?? grade}.`)
   }
 
   const statusLabel = status?.connected
     ? 'متصل'
     : status?.state === 'qr'
       ? 'بانتظار مسح رمز QR'
-      : status?.state === 'gateway_offline'
-        ? 'غير متصل (خدمة WhatsApp غير شغّالة)'
-        : 'غير متصل'
+      : status?.state === 'recovering' || status?.state === 'connecting'
+        ? 'جاري إعادة الاتصال... انتظر ظهور رمز QR'
+        : status?.state === 'gateway_offline'
+          ? 'غير متصل (خدمة WhatsApp غير شغّالة)'
+          : 'غير متصل'
 
   const contactsByGrade = useMemo(() => {
     const map = new Map<number, ClassContact[]>()
@@ -174,7 +175,7 @@ export function AdminWhatsAppPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-[var(--color-gold)]">مشرفو الاستئذان</h1>
+      <h1 className="text-2xl font-bold text-[var(--color-gold)]">مشرفو الخروج</h1>
       <p className="text-[var(--color-muted)]">
         الصفوف الأولية (1–3): مشرف واتساب ثابت لكل فصل (أ / ب / ج / د). الصفوف 4–6: مشرف لكل صف
         يتغيّر حسب اليوم (توقيت الرياض).
@@ -201,7 +202,7 @@ export function AdminWhatsAppPage() {
         {[1, 2, 3].map((grade) => (
           <div key={grade} className="space-y-3">
             <h3 className="font-semibold text-[var(--color-text)]">
-              الصف {grade === 1 ? 'الأول' : grade === 2 ? 'الثاني' : 'الثالث'}
+              الصف {GRADE_LABELS[grade] ?? grade}
             </h3>
             <div className="grid gap-4 md:grid-cols-2">
               {(contactsByGrade.get(grade) ?? []).map((c) => (

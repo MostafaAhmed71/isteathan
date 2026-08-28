@@ -5,10 +5,12 @@
 import { createServer } from 'node:http'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, rmSync } from 'node:fs'
+import { execSync } from 'node:child_process'
 
 const gatewayDir = dirname(fileURLToPath(import.meta.url))
 const root = resolve(gatewayDir, '..')
+const tokensDir = resolve(gatewayDir, 'tokens')
 
 function loadEnvFile(envPath) {
   if (!existsSync(envPath)) return
@@ -37,6 +39,17 @@ const BASE_PATH = (process.env.WHATSAPP_GATEWAY_BASE_PATH || '').replace(/\/$/, 
 let client = null
 let lastQr = null
 let state = 'starting'
+let starting = false
+let recoverTimer = null
+
+const DISCONNECT_STATUSES = new Set([
+  'disconnectedMobile',
+  'desconnectedMobile',
+  'browserClose',
+  'autocloseCalled',
+  'serverClose',
+  'deleteToken',
+])
 
 function json(res, status, data) {
   res.statusCode = status
@@ -181,52 +194,124 @@ const chromeArgs = [
   '--no-zygote',
 ]
 
+async function closeClientQuietly() {
+  const current = client
+  client = null
+  if (!current) return
+  try {
+    if (typeof current.close === 'function') await current.close()
+  } catch {
+    /* ignore */
+  }
+}
+
+function killStaleBrowsers() {
+  try {
+    execSync(`pkill -f '${tokensDir.replace(/'/g, `'\\''`)}' || true`, { stdio: 'ignore' })
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearSessionFolder() {
+  const sessionPath = resolve(tokensDir, SESSION)
+  try {
+    if (existsSync(sessionPath)) {
+      rmSync(sessionPath, { recursive: true, force: true })
+      console.log('[whatsapp] cleared unpaired session folder')
+    }
+  } catch (err) {
+    console.warn('[whatsapp] failed to clear session folder', err instanceof Error ? err.message : err)
+  }
+}
+
+function scheduleRecover(reason, { clearSession = true, delayMs = 4000 } = {}) {
+  if (recoverTimer || starting) {
+    console.log('[whatsapp] recover already pending/running; reason=', reason)
+    return
+  }
+  state = 'recovering'
+  lastQr = null
+  console.log(`[whatsapp] scheduling recover in ${delayMs}ms (${reason})`)
+  recoverTimer = setTimeout(() => {
+    recoverTimer = null
+    void recoverSession(reason, clearSession)
+  }, delayMs)
+}
+
+async function recoverSession(reason, clearSession) {
+  console.log('[whatsapp] recovering after', reason)
+  await closeClientQuietly()
+  killStaleBrowsers()
+  await new Promise((r) => setTimeout(r, 1500))
+  if (clearSession) clearSessionFolder()
+  try {
+    await startWpp()
+  } catch (err) {
+    state = 'error'
+    console.error('[whatsapp] recover failed', err)
+    scheduleRecover('recover_failed', { clearSession: true, delayMs: 10000 })
+  }
+}
+
 async function startWpp() {
+  if (starting) return
+  starting = true
+  killStaleBrowsers()
+  await new Promise((r) => setTimeout(r, 1000))
   const wppconnect = await import('@wppconnect-team/wppconnect')
   const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || undefined
   const maxAttempts = 8
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    state = 'connecting'
-    lastQr = null
-    try {
-      client = await wppconnect.create({
-        session: SESSION,
-        catchQR: (base64Qr) => {
-          lastQr = base64Qr
-          state = 'qr'
-          console.log('[whatsapp] Scan the QR from Admin → مشرفو الاستئذان')
-        },
-        statusFind: (statusSession) => {
-          state = String(statusSession || state)
-          if (statusSession === 'isLogged' || statusSession === 'qrReadSuccess' || statusSession === 'inChat') {
-            lastQr = null
-          }
-          console.log('[whatsapp] status', statusSession)
-        },
-        headless: true,
-        logQR: true,
-        disableWelcome: true,
-        autoClose: 0,
-        deviceSyncTimeout: 0,
-        waitForLogin: true,
-        folderNameToken: resolve(gatewayDir, 'tokens'),
-        browserArgs: chromeArgs,
-        puppeteerOptions: {
-          ...(executablePath ? { executablePath } : {}),
-          args: chromeArgs,
-        },
-      })
-      state = 'connected'
+  try {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      state = 'connecting'
       lastQr = null
-      console.log('[whatsapp] session ready')
-      return
-    } catch (err) {
-      client = null
-      const message = err instanceof Error ? err.message : String(err)
-      console.error(`[whatsapp] start attempt ${attempt}/${maxAttempts} failed:`, message)
-      if (attempt === maxAttempts) throw err
-      await new Promise((r) => setTimeout(r, 4000))
+      try {
+        client = await wppconnect.create({
+          session: SESSION,
+          catchQR: (base64Qr) => {
+            lastQr = base64Qr
+            state = 'qr'
+            console.log('[whatsapp] Scan the QR from Admin → مشرفو الخروج')
+          },
+          statusFind: (statusSession) => {
+            const status = String(statusSession || '')
+            state = status || state
+            if (status === 'isLogged' || status === 'qrReadSuccess' || status === 'inChat') {
+              lastQr = null
+            }
+            console.log('[whatsapp] status', statusSession)
+            if (DISCONNECT_STATUSES.has(status)) {
+              scheduleRecover(status, { clearSession: true, delayMs: 3000 })
+            }
+          },
+          headless: true,
+          logQR: true,
+          disableWelcome: true,
+          autoClose: 0,
+          deviceSyncTimeout: 0,
+          waitForLogin: true,
+          folderNameToken: tokensDir,
+          browserArgs: chromeArgs,
+          puppeteerOptions: {
+            ...(executablePath ? { executablePath } : {}),
+            args: chromeArgs,
+          },
+        })
+        state = 'connected'
+        lastQr = null
+        console.log('[whatsapp] session ready')
+        return
+      } catch (err) {
+        client = null
+        const message = err instanceof Error ? err.message : String(err)
+        console.error(`[whatsapp] start attempt ${attempt}/${maxAttempts} failed:`, message)
+        if (attempt === maxAttempts) throw err
+        await new Promise((r) => setTimeout(r, 4000))
+      }
     }
+  } finally {
+    starting = false
   }
 }
 

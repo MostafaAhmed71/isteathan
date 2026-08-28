@@ -27,12 +27,12 @@ function normalizeWhatsAppNumber(raw: string): string | null {
 }
 
 const GRADE: Record<number, string> = {
-  1: "الأول",
-  2: "الثاني",
-  3: "الثالث",
-  4: "الرابع",
-  5: "الخامس",
-  6: "السادس",
+  1: "الأول الابتدائي",
+  2: "الثاني الابتدائي",
+  3: "الثالث الابتدائي",
+  4: "الرابع الابتدائي",
+  5: "الخامس الابتدائي",
+  6: "السادس الابتدائي",
 };
 
 function riyadhWeekday(at = new Date()) {
@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
           messageType: "REQUEST_CREATED",
           phone: supervisor.phone,
           text: [
-            "طلب استئذان جديد",
+            "طلب خروج جديد",
             "",
             `الطالب: ${studentName}`,
             `الصف: ${GRADE[grade] ?? grade}`,
@@ -165,12 +165,12 @@ Deno.serve(async (req) => {
             "",
             `ولي الأمر: ${guardianName}`,
             "",
-            "سبب الاستئذان:",
+            "سبب الخروج:",
             (request.reason || "").trim() || "بدون سبب",
             "",
             `وقت الطلب: ${request.created_at}`,
             "",
-            "يرجى الدخول إلى نظام استئذان لمراجعة الطلب.",
+            "يرجى الدخول إلى نظام خروج لمراجعة الطلب.",
           ].join("\n"),
         });
       }
@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
         recipientType: "PARENT",
         messageType: "REQUEST_CREATED",
         phone: guardian?.phone ?? "",
-        text: `تم استلام طلب استئذان الطالب ${studentName} بنجاح، وجارٍ معالجة الطلب من قبل المدرسة.`,
+        text: `تم استلام طلب خروج الطالب ${studentName} بنجاح، وجارٍ معالجة الطلب من قبل المدرسة.`,
       });
     }
 
@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
         messageType: "REQUEST_APPROVED",
         phone: guardian?.phone ?? "",
         text: [
-          `تمت الموافقة على طلب استئذان الطالب ${studentName}.`,
+          `تمت الموافقة على طلب خروج الطالب ${studentName}.`,
           "",
           `الصف: ${GRADE[grade] ?? grade}`,
           `الفصل: ${section}`,
@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
         messageType: "REQUEST_REJECTED",
         phone: guardian?.phone ?? "",
         text: [
-          `تم رفض طلب استئذان الطالب ${studentName}.`,
+          `تم رفض طلب خروج الطالب ${studentName}.`,
           "",
           `الصف: ${GRADE[grade] ?? grade}`,
           `الفصل: ${section}`,

@@ -9,6 +9,7 @@ import {
   type Student,
 } from '../../lib/types'
 import {
+  DangerButton,
   EmptyState,
   ErrorBox,
   PrimaryButton,
@@ -23,6 +24,8 @@ export function AdminStudentsPage() {
   const [parents, setParents] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
+  const [busy, setBusy] = useState(false)
   const [editing, setEditing] = useState<Student | null>(null)
   const [form, setForm] = useState({
     national_id: '',
@@ -75,6 +78,7 @@ export function AdminStudentsPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError('')
+    setInfo('')
     if (!form.national_id || !form.full_name || !form.class_id) {
       setError('رقم الهوية والاسم والفصل مطلوبة.')
       return
@@ -98,16 +102,94 @@ export function AdminStudentsPage() {
     await reload()
   }
 
-  async function deactivate(id: string) {
-    await supabase.from('students').update({ is_active: false }).eq('id', id)
-    await reload()
+  async function removeStudent(student: Student) {
+    const ok = window.confirm(`حذف الطالب ${student.full_name} نهائياً؟ لا يمكن التراجع.`)
+    if (!ok) return
+    setError('')
+    setInfo('')
+    setBusy(true)
+    try {
+      const { error: reqErr } = await supabase
+        .from('permission_requests')
+        .delete()
+        .eq('student_id', student.id)
+      if (reqErr) {
+        setError('تعذر حذف طلبات الخروج المرتبطة بالطالب.')
+        return
+      }
+      const { error: delErr } = await supabase.from('students').delete().eq('id', student.id)
+      if (delErr) {
+        setError('تعذر حذف الطالب.')
+        return
+      }
+      if (editing?.id === student.id) startCreate()
+      setInfo(`تم حذف «${student.full_name}».`)
+      await reload()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function removeAllStudents() {
+    setError('')
+    setInfo('')
+    if (students.length === 0) {
+      setInfo('لا يوجد طلاب لحذفهم.')
+      return
+    }
+    if (
+      !window.confirm(
+        `سيتم حذف كل الطلاب (${students.length}) وطلبات الخروج المرتبطة بهم.\nلا يمكن التراجع. المتابعة؟`,
+      )
+    ) {
+      return
+    }
+    if (!window.confirm('تأكيد أخير: حذف جميع الطلاب نهائياً؟')) {
+      return
+    }
+
+    setBusy(true)
+    try {
+      const { error: reqErr } = await supabase
+        .from('permission_requests')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000')
+      if (reqErr) {
+        setError('تعذر حذف طلبات الخروج قبل حذف الطلاب.')
+        return
+      }
+      const { error: delErr } = await supabase
+        .from('students')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000')
+      if (delErr) {
+        setError('تعذر حذف الطلاب.')
+        return
+      }
+      startCreate()
+      setInfo(`تم حذف جميع الطلاب (${students.length}).`)
+      await reload()
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold text-[var(--color-gold)]">الطلاب</h1>
-        <SecondaryButton type="button" onClick={startCreate}>طالب جديد</SecondaryButton>
+        <div className="flex flex-wrap gap-2">
+          <SecondaryButton type="button" disabled={busy} onClick={startCreate}>
+            طالب جديد
+          </SecondaryButton>
+          <DangerButton
+            type="button"
+            disabled={busy || loading || students.length === 0}
+            onClick={() => void removeAllStudents()}
+          >
+            {busy ? 'جاري الحذف...' : `حذف الكل (${students.length})`}
+          </DangerButton>
+        </div>
       </div>
 
       <form onSubmit={onSubmit} className="grid gap-3 glass-panel glass-interactive p-4 sm:grid-cols-2">
@@ -131,10 +213,13 @@ export function AdminStudentsPage() {
           ))}
         </SelectField>
         <div className="flex items-end">
-          <PrimaryButton type="submit" full>{editing ? 'تحديث' : 'إضافة'}</PrimaryButton>
+          <PrimaryButton type="submit" full disabled={busy}>
+            {editing ? 'تحديث' : 'إضافة'}
+          </PrimaryButton>
         </div>
-        <div className="sm:col-span-2">
+        <div className="sm:col-span-2 space-y-2">
           <ErrorBox message={error} />
+          {info ? <p className="text-sm text-[var(--color-gold-soft)]">{info}</p> : null}
         </div>
       </form>
 
@@ -145,17 +230,19 @@ export function AdminStudentsPage() {
         {students.map((s) => (
           <div key={s.id} className="flex flex-wrap items-center justify-between gap-2 glass-panel glass-interactive p-3">
             <div>
-              <p className="font-bold">{s.full_name} {!s.is_active ? '(غير نشط)' : ''}</p>
+              <p className="font-bold">{s.full_name}</p>
               <p className="text-sm text-[var(--color-muted)]">
                 {s.national_id} — {s.classes ? classLabel(s.classes.grade, s.classes.section) : ''}
                 {s.guardian_id ? '' : ' — غير مرتبط بولي أمر'}
               </p>
             </div>
             <div className="flex gap-2">
-              <SecondaryButton type="button" onClick={() => startEdit(s)}>تعديل</SecondaryButton>
-              {s.is_active ? (
-                <SecondaryButton type="button" onClick={() => void deactivate(s.id)}>تعطيل</SecondaryButton>
-              ) : null}
+              <SecondaryButton type="button" disabled={busy} onClick={() => startEdit(s)}>
+                تعديل
+              </SecondaryButton>
+              <DangerButton type="button" disabled={busy} onClick={() => void removeStudent(s)}>
+                حذف
+              </DangerButton>
             </div>
           </div>
         ))}

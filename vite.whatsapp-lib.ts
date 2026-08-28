@@ -24,12 +24,12 @@ export function normalizeWhatsAppNumber(raw: string, defaultCountry = '966'): st
 }
 
 const GRADE_LABELS: Record<number, string> = {
-  1: 'الأول',
-  2: 'الثاني',
-  3: 'الثالث',
-  4: 'الرابع',
-  5: 'الخامس',
-  6: 'السادس',
+  1: 'الأول الابتدائي',
+  2: 'الثاني الابتدائي',
+  3: 'الثالث الابتدائي',
+  4: 'الرابع الابتدائي',
+  5: 'الخامس الابتدائي',
+  6: 'السادس الابتدائي',
 }
 
 export function gradeLabel(grade: number): string {
@@ -109,7 +109,7 @@ export function supervisorNewRequestMessage(input: {
 }): string {
   const reason = input.reason.trim() || 'بدون سبب'
   return [
-    'طلب استئذان جديد',
+    'طلب خروج جديد',
     '',
     `الطالب: ${input.studentName}`,
     `الصف: ${gradeLabel(input.grade)}`,
@@ -117,17 +117,17 @@ export function supervisorNewRequestMessage(input: {
     '',
     `ولي الأمر: ${input.guardianName}`,
     '',
-    'سبب الاستئذان:',
+    'سبب الخروج:',
     reason,
     '',
     `وقت الطلب: ${formatRequestTime(input.requestTime)}`,
     '',
-    'يرجى الدخول إلى نظام استئذان لمراجعة الطلب.',
+    'يرجى الدخول إلى نظام خروج لمراجعة الطلب.',
   ].join('\n')
 }
 
 export function parentCreatedMessage(studentName: string): string {
-  return `تم استلام طلب استئذان الطالب ${studentName} بنجاح، وجارٍ معالجة الطلب من قبل المدرسة.`
+  return `تم استلام طلب خروج الطالب ${studentName} بنجاح، وجارٍ معالجة الطلب من قبل المدرسة.`
 }
 
 export function parentApprovedMessage(input: {
@@ -136,7 +136,7 @@ export function parentApprovedMessage(input: {
   section: string
 }): string {
   return [
-    `تمت الموافقة على طلب استئذان الطالب ${input.studentName}.`,
+    `تمت الموافقة على طلب خروج الطالب ${input.studentName}.`,
     '',
     `الصف: ${gradeLabel(input.grade)}`,
     `الفصل: ${input.section}`,
@@ -152,7 +152,7 @@ export function parentRejectedMessage(input: {
   rejectionReason: string | null
 }): string {
   const lines = [
-    `تم رفض طلب استئذان الطالب ${input.studentName}.`,
+    `تم رفض طلب خروج الطالب ${input.studentName}.`,
     '',
     `الصف: ${gradeLabel(input.grade)}`,
     `الفصل: ${input.section}`,

@@ -194,8 +194,8 @@ export function notifyDecisionPlugin(): Plugin {
               request.status === 'APPROVED' ? 'تمت الموافقة على الطلب' : 'تم رفض الطلب'
             const text =
               request.status === 'APPROVED'
-                ? `تمت الموافقة على طلب استئذان ${name}.`
-                : `تم رفض طلب استئذان ${name}${
+                ? `تمت الموافقة على طلب خروج ${name}.`
+                : `تم رفض طلب خروج ${name}${
                     request.rejection_reason ? `: ${request.rejection_reason}` : '.'
                   }`
 
@@ -254,8 +254,8 @@ export function notifyDecisionPlugin(): Plugin {
           const result = await sendPushToUser(
             admin,
             staffId,
-            'طلب استئذان جديد',
-            `وصل طلب استئذان للطالب: ${name}`,
+            'طلب خروج جديد',
+            `وصل طلب خروج للطالب: ${name}`,
             `new-${request.id}`,
           )
           json(res, 200, { ok: true, ...result })

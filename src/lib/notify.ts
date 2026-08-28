@@ -113,8 +113,8 @@ export async function showBrowserNotification(title: string, body: string) {
 
   const options: NotificationOptions & { renotify?: boolean; vibrate?: number[] } = {
     body,
-    icon: '/school-logo.jpeg',
-    badge: '/school-logo.jpeg',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
     tag: `isteathan-${Date.now()}`,
     renotify: true,
     dir: 'rtl',
@@ -147,8 +147,8 @@ export async function showBrowserNotification(title: string, body: string) {
 export function alertNewPermissionRequest(studentName: string) {
   playAlertSound()
   void showBrowserNotification(
-    'طلب استئذان جديد',
-    `وصل طلب استئذان للطالب: ${studentName}`,
+    'طلب خروج جديد',
+    `وصل طلب خروج للطالب: ${studentName}`,
   )
 }
 
@@ -160,8 +160,8 @@ export function alertRequestDecision(
   const title = status === 'APPROVED' ? 'تمت الموافقة على الطلب' : 'تم رفض الطلب'
   const body =
     status === 'APPROVED'
-      ? `تمت الموافقة على طلب استئذان ${studentName}.`
-      : `تم رفض طلب استئذان ${studentName}${
+      ? `تمت الموافقة على طلب خروج ${studentName}.`
+      : `تم رفض طلب خروج ${studentName}${
           rejectionReason?.trim() ? `: ${rejectionReason.trim()}` : '.'
         }`
   playAlertSound()

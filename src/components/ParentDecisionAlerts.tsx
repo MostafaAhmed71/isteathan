@@ -52,7 +52,7 @@ export function ParentDecisionAlerts() {
 
         alertRequestDecision(studentName, next.status, next.rejection_reason)
         setToast({
-          message: `رد الإدارة على طلب استئذان ${studentName}: ${STATUS_LABELS[next.status]}`,
+          message: `رد الإدارة على طلب خروج ${studentName}: ${STATUS_LABELS[next.status]}`,
           tone: next.status === 'APPROVED' ? 'success' : 'warning',
         })
       })()

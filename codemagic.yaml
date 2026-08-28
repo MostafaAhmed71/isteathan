@@ -1,0 +1,106 @@
+# Builds the React PWA, syncs it into the Capacitor iOS project, signs an IPA,
+# and uploads it to TestFlight. Commit this file at the repo root.
+#
+# Required in the Codemagic UI (see README):
+#   1. App Store Connect API key named exactly "Isteathan"
+#   2. Environment group "isteathan" with VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY,
+#      and APP_STORE_APPLE_ID (numeric Apple ID from App Store Connect)
+#   3. iOS distribution certificate + App Store provisioning profile for sa.isteathan.app
+
+workflows:
+  ios-testflight:
+    name: iOS TestFlight
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Isteathan
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: sa.isteathan.app
+      groups:
+        - isteathan
+      vars:
+        BUNDLE_ID: sa.isteathan.app
+        XCODE_WORKSPACE: App.xcworkspace
+        XCODE_SCHEME: App
+        # Override in the Codemagic UI if the App Store version should stay fixed.
+        MARKETING_VERSION: 0.1.0
+      node: 20
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+        - pattern: master
+          include: true
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm ci
+      - name: Build React web app
+        # Use vite:build (not npm run build). The repo's `build` script is a
+        # Linux/NTFS workaround and must not run on Codemagic macOS machines.
+        script: |
+          test -n "${VITE_SUPABASE_URL:-}" || {
+            echo "Missing VITE_SUPABASE_URL. Add it to the Codemagic group 'isteathan'."
+            exit 1
+          }
+          test -n "${VITE_SUPABASE_ANON_KEY:-}" || {
+            echo "Missing VITE_SUPABASE_ANON_KEY. Add it to the Codemagic group 'isteathan'."
+            exit 1
+          }
+          npm run vite:build
+      - name: Sync web assets into the iOS project
+        script: |
+          npx cap sync ios
+      - name: Install CocoaPods
+        script: |
+          cd ios/App
+          pod install
+      - name: Set up code signing settings on Xcode project
+        script: |
+          # Internal TestFlight only — no App Store / external-beta review.
+          # Remove --custom-export-options when you are ready for public testers
+          # or an App Store submission.
+          xcode-project use-profiles \
+            --custom-export-options='{"testFlightInternalTestingOnly": true}'
+      - name: Increment iOS build number
+        script: |
+          cd "$CM_BUILD_DIR/ios/App"
+          LATEST_BUILD_NUMBER=0
+          if [ -n "${APP_STORE_APPLE_ID:-}" ]; then
+            LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" --bundle-id "$BUNDLE_ID" || true)
+            if [ -z "$LATEST_BUILD_NUMBER" ]; then
+              LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" --bundle-id "$BUNDLE_ID" || true)
+            fi
+          fi
+          if [ -z "$LATEST_BUILD_NUMBER" ]; then
+            LATEST_BUILD_NUMBER=${BUILD_NUMBER:-1}
+          else
+            LATEST_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
+          fi
+          echo "Using CFBundleVersion=$LATEST_BUILD_NUMBER"
+          agvtool new-version -all "$LATEST_BUILD_NUMBER"
+          agvtool new-marketing-version "$MARKETING_VERSION"
+      - name: Build signed IPA
+        script: |
+          cd "$CM_BUILD_DIR/ios/App"
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - ios/App/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # After creating a TestFlight group in App Store Connect, uncomment and
+        # use the exact group name:
+        # beta_groups:
+        #   - Internal testers

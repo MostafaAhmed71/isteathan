@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { isNativeApp } from '../lib/native'
 
 const DISMISS_KEY = 'isteathan-install-dismissed'
 const IOS_HINT_KEY = 'isteathan-ios-hint-dismissed'
@@ -31,7 +32,7 @@ export function InstallPrompt() {
   const [showIos, setShowIos] = useState(false)
 
   useEffect(() => {
-    if (isStandalone()) return
+    if (isNativeApp() || isStandalone()) return
 
     const onBeforeInstall = (event: Event) => {
       event.preventDefault()
@@ -84,7 +85,7 @@ export function InstallPrompt() {
     >
       {showAndroid && (
         <div className="mx-auto max-w-md">
-          <p className="font-bold text-[var(--color-gold-soft)]">تثبيت تطبيق استئذان</p>
+          <p className="font-bold text-[var(--color-gold-soft)]">تثبيت تطبيق خروج</p>
           <p className="mt-1 mb-3 text-sm text-[var(--color-muted)]">
             ثبّت التطبيق على الشاشة الرئيسية للوصول السريع بدون شريط المتصفح.
           </p>
@@ -101,7 +102,7 @@ export function InstallPrompt() {
 
       {!showAndroid && showIos && (
         <div className="mx-auto max-w-md">
-          <p className="font-bold text-[var(--color-gold-soft)]">إضافة استئذان للشاشة الرئيسية</p>
+          <p className="font-bold text-[var(--color-gold-soft)]">إضافة خروج للشاشة الرئيسية</p>
           <p className="mt-1 mb-3 text-sm text-[var(--color-muted)]">
             على آيفون: اضغط مشاركة ثم «إضافة إلى الشاشة الرئيسية».
           </p>

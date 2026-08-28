@@ -1,6 +1,6 @@
-# استئذان
+# خروج
 
-تطبيق ويب عربي (RTL) لإدارة طلبات استئذان — مدارس نخبة الشمال الأهلية.
+تطبيق ويب عربي (RTL) لإدارة طلبات خروج الطلاب — مدارس نخبة الشمال الأهلية.
 
 المسار الأساسي: ولي الأمر يرسل طلبًا → يظهر فورًا عند الفصل → موافقة/رفض → ولي الأمر يرى النتيجة.
 
@@ -55,13 +55,15 @@ npm run dev
 
 يفتح: http://127.0.0.1:5173/
 
-> **مهم — `/mnt/E` (NTFS):** `npm install` و`vite` يفشلون هناك (`vite: not found` / `esbuild EACCES`).
-> `npm run dev` و`npm run build` ينسخان المشروع تلقائيًا إلى `~/work/isteathan` ويشغّلان منه.
->
-> أو مباشرة:
-> ```bash
-> cd ~/work/isteathan && npm run vite:dev
-> ```
+نفس الأوامر تعمل على ويندوز ولينكس:
+
+- **ويندوز:** Vite يعمل محليًا في مجلد المشروع (`npm run vite:dev` / `vite:build`).
+- **لينكس — `/mnt/E` (NTFS):** `npm install` و`vite` يفشلون هناك (`vite: not found` / `esbuild EACCES`). `npm run dev` و`npm run build` ينسخان المشروع تلقائيًا إلى `~/work/isteathan` ويشغّلان منه.
+
+أو مباشرة على لينكس:
+```bash
+cd ~/work/isteathan && npm run vite:dev
+```
 
 ### 4) إنشاء الحسابات من لوحة الإدارة
 
@@ -111,7 +113,7 @@ npm run whatsapp:gateway
 ```
 
 ثم نفّذ `supabase/migrations/009_whatsapp_notifications.sql` في SQL Editor.
-من لوحة الإدارة → **مشرفو الاستئذان**: أدخل الاسم والرقم، وامسح رمز QR عند أول تشغيل.
+من لوحة الإدارة → **مشرفو الخروج**: أدخل الاسم والرقم، وامسح رمز QR عند أول تشغيل.
 
 ## متغيرات البيئة
 
@@ -132,6 +134,40 @@ npm run check:pwa
 ```
 
 النشر يتطلب HTTPS.
+
+## تطبيق iOS (Capacitor + TestFlight)
+
+الواجهة نفسها تُغلَّف في مشروع Xcode عبر Capacitor. البناء والتوقيع والرفع إلى TestFlight يتمّون على [Codemagic](https://codemagic.io) (ماك سحابي) — لا تحتاج ماك محليًا.
+
+معرّف التطبيق (Bundle ID): `sa.isteathan.app`
+
+```bash
+npm run vite:build
+npx cap sync ios
+```
+
+`codemagic.yaml` في جذر المستودع يبني IPA ويرفعه TestFlight عند الدفع إلى `main` / `master`.
+
+### ما الذي تفعله يدويًا مرة واحدة
+
+1. **حساب Apple Developer Program** (مدفوع) على [developer.apple.com](https://developer.apple.com).
+2. في [Certificates, Identifiers & Profiles](https://developer.apple.com/account/resources/identifiers/list): أنشئ App ID من نوع App باسم خروج وـ Bundle ID `sa.isteathan.app`.
+3. في [App Store Connect](https://appstoreconnect.apple.com) → My Apps → New App: منصة iOS، الاسم، Bundle ID نفسه، وSKU اختياري مثل `isteathan`. انسخ **Apple ID** الرقمي من App Information — هذا هو `APP_STORE_APPLE_ID`.
+4. ارفع المستودع إلى GitHub (أو GitLab/Bitbucket) بعد تضمين مجلد `ios/` و`codemagic.yaml`.
+5. أنشئ مفتاح API: App Store Connect → Users and Access → Integrations → App Store Connect API → مفتاح بصلاحية **App Manager**. حمّل ملف `.p8` مرة واحدة واحفظ **Issuer ID** و**Key ID**.
+6. في [Codemagic](https://codemagic.io): Add application ← اربط GitHub ← اختر هذا المستودع ← project type **Ionic Capacitor**.
+7. Team settings → Team integrations → Developer Portal: أضف المفتاح باسم **`Isteathan`** تمامًا (نفس الاسم في `codemagic.yaml`) مع ملف `.p8` وIssuer ID وKey ID.
+8. Team settings → Code signing identities:
+   - iOS certificates → **Generate certificate** من نوع **Apple Distribution** باستخدام نفس مفتاح API.
+   - iOS provisioning profiles → **Fetch profiles** واختر بروفايل **App Store** لمعرّف `sa.isteathan.app`. إن لم يظهر، أنشئ App Store provisioning profile في بوابة Apple ثم Fetch مرة أخرى.
+9. في التطبيق على Codemagic → Environment variables: مجموعة اسمها **`isteathan`** (Secret حيث يلزم) وفيها:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `APP_STORE_APPLE_ID` (الرقم من الخطوة 3)
+   - اختياري: `VITE_VAPID_PUBLIC_KEY`
+10. Start new build → workflow **iOS TestFlight**. بعد نجاح البناء يظهر التطبيق في TestFlight خلال دقائق (المعالجة عند أبل قد تستغرق أطول في المرة الأولى). أضف نفسك كـ Internal Tester من App Store Connect → TestFlight.
+
+البناء الحالي معلَّم **TestFlight Internal Only** (بدون مراجعة أبل للبيتا الخارجية). لإتاحته لمجموعات خارجية أو للمتجر: احذف `--custom-export-options` من `codemagic.yaml` وأضف `beta_groups` إن لزم.
 
 ## الرخصة
 

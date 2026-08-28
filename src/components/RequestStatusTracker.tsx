@@ -41,9 +41,9 @@ function statusMessage(status: RequestStatus): string {
     case 'PENDING':
       return 'طلبك وصل لإدارة الفصل، وجاري مراجعته الآن.'
     case 'APPROVED':
-      return 'تمت الموافقة على طلب الاستئذان.'
+      return 'تمت الموافقة على طلب الخروج.'
     case 'REJECTED':
-      return 'تم رفض طلب الاستئذان.'
+      return 'تم رفض طلب الخروج.'
     case 'CANCELLED':
       return 'تم إلغاء الطلب.'
   }

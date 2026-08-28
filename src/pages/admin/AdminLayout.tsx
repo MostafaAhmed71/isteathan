@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom'
 import { SchoolBrand } from '../../components/SchoolBrand'
 import { SecondaryButton } from '../../components/ui'
 import { useAuth } from '../../lib/auth'
+import { APP_NAME } from '../../lib/brand'
 
 const links = [
   { to: '/admin', label: 'لوحة التحكم', end: true },
@@ -12,7 +13,8 @@ const links = [
   { to: '/admin/staff', label: 'الموظفون' },
   { to: '/admin/import', label: 'استيراد' },
   { to: '/admin/guide', label: 'الدليل' },
-  { to: '/admin/whatsapp', label: 'مشرفو الاستئذان' },
+  { to: '/admin/whatsapp', label: 'مشرفو الخروج' },
+  { to: '/display/lobby', label: 'شاشة البهو' },
 ]
 
 export function AdminLayout() {
@@ -27,12 +29,12 @@ export function AdminLayout() {
               <SchoolBrand variant="compact" />
             </Link>
             <div className="min-w-0">
-              <p className="brand-title text-lg md:text-xl">استئذان — الإدارة</p>
+              <p className="brand-title text-lg md:text-xl">{APP_NAME} — الإدارة</p>
               <p className="text-sm text-[var(--color-muted)]">{profile?.full_name}</p>
             </div>
           </div>
           <SecondaryButton type="button" onClick={() => void signOut()}>
-            خروج
+            تسجيل الخروج
           </SecondaryButton>
         </div>
         <hr className="gold-rule mx-4" />
