@@ -1,16 +1,25 @@
 /** In-app + browser notifications for realtime request events. */
 
+import { isNativeApp } from './native'
+import {
+  checkNativeNotificationPermission,
+  requestNativeNotificationPermission,
+  showNativeNotification,
+} from './nativeNotifications'
+
 export type NotifyPermission = NotificationPermission | 'unsupported' | 'insecure'
 
 export function notificationSupport(): NotifyPermission {
   if (typeof window === 'undefined') return 'unsupported'
+  if (isNativeApp()) return 'default'
   if (!window.isSecureContext) return 'insecure'
   if (!('Notification' in window)) return 'unsupported'
   return Notification.permission
 }
 
 /** Read current permission without prompting. */
-export function getNotificationPermission(): NotifyPermission {
+export async function getNotificationPermission(): Promise<NotifyPermission> {
+  if (isNativeApp()) return checkNativeNotificationPermission()
   return notificationSupport()
 }
 
@@ -31,6 +40,15 @@ export async function ensureServiceWorkerReady(): Promise<ServiceWorkerRegistrat
 export async function ensureNotificationPermission(
   interactive = false,
 ): Promise<NotifyPermission> {
+  if (isNativeApp()) {
+    const current = await checkNativeNotificationPermission()
+    if (current === 'granted' || current === 'denied' || current === 'unsupported') {
+      if (current === 'granted' || !interactive) return current
+    }
+    if (!interactive) return current
+    return requestNativeNotificationPermission()
+  }
+
   const current = notificationSupport()
   if (current === 'unsupported' || current === 'insecure') return current
   if (current === 'denied') return current
@@ -55,7 +73,9 @@ export async function ensureNotificationPermission(
 
 export function permissionHelpMessage(permission: NotifyPermission): string {
   if (permission === 'granted') {
-    return 'تم تفعيل إشعارات الخلفية. سيصلك إشعار حتى لو كان المتصفح في الخلفية (بعد تفعيل Web Push).'
+    return isNativeApp()
+      ? 'تم تفعيل الإشعارات. سيصلك تنبيه في شريط الإشعارات حتى لو كان التطبيق في الخلفية.'
+      : 'تم تفعيل إشعارات الخلفية. سيصلك إشعار حتى لو كان المتصفح في الخلفية (بعد تفعيل Web Push).'
   }
   if (permission === 'insecure') {
     return 'إشعارات المتصفح تحتاج HTTPS. استخدم رابط الاختبار الآمن، أو اعتمد على التنبيه داخل التطبيق والتطبيق ظاهر.'
@@ -64,9 +84,11 @@ export function permissionHelpMessage(permission: NotifyPermission): string {
     return 'هذا المتصفح لا يدعم إشعارات سطح المكتب.'
   }
   if (permission === 'denied') {
-    return 'تم رفض الإشعارات سابقًا. من إعدادات المتصفح لهذا الموقع اختر الإشعارات ← السماح، ثم أعد تحميل الصفحة واضغط «تفعيل الإشعارات».'
+    return isNativeApp()
+      ? 'تم رفض الإشعارات. من إعدادات الجهاز → التطبيقات → خروج → إشعارات، فعّلها ثم اضغط «تفعيل الإشعارات».'
+      : 'تم رفض الإشعارات سابقًا. من إعدادات المتصفح لهذا الموقع اختر الإشعارات ← السماح، ثم أعد تحميل الصفحة واضغط «تفعيل الإشعارات».'
   }
-  return 'اضغط «تفعيل الإشعارات» للسماح بإشعارات المتصفح.'
+  return 'اضغط «تفعيل الإشعارات» للسماح بإشعارات التطبيق.'
 }
 
 export function playAlertSound() {
@@ -106,7 +128,16 @@ export function playAlertSound() {
   }
 }
 
-export async function showBrowserNotification(title: string, body: string) {
+export async function showBrowserNotification(
+  title: string,
+  body: string,
+  url = '/',
+) {
+  if (isNativeApp()) {
+    await showNativeNotification(title, body, url)
+    return
+  }
+
   if (typeof window === 'undefined' || !('Notification' in window)) return
   if (!window.isSecureContext) return
   if (Notification.permission !== 'granted') return
@@ -149,6 +180,7 @@ export function alertNewPermissionRequest(studentName: string) {
   void showBrowserNotification(
     'طلب خروج جديد',
     `وصل طلب خروج للطالب: ${studentName}`,
+    '/display/class',
   )
 }
 
@@ -165,5 +197,5 @@ export function alertRequestDecision(
           rejectionReason?.trim() ? `: ${rejectionReason.trim()}` : '.'
         }`
   playAlertSound()
-  void showBrowserNotification(title, body)
+  void showBrowserNotification(title, body, '/parent/requests')
 }

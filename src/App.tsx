@@ -1,7 +1,9 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { InstallPrompt } from './components/InstallPrompt'
 import { OfflineBanner } from './components/OfflineBanner'
 import { ProtectedRoute, PublicOnly } from './components/ProtectedRoute'
+import { listenNativeLaunchPath, consumeNativeLaunchPath } from './lib/backgroundMonitor'
 import { LoginPage } from './pages/LoginPage'
 import { ParentRegisterPage } from './pages/ParentRegisterPage'
 import { SetupAdminPage } from './pages/SetupAdminPage'
@@ -23,9 +25,22 @@ import { AdminImportPage } from './pages/admin/AdminImportPage'
 import { AdminGuidePage } from './pages/admin/AdminGuidePage'
 import { AdminWhatsAppPage } from './pages/admin/AdminWhatsAppPage'
 
+function NativeLaunchListener() {
+  const navigate = useNavigate()
+  useEffect(() => {
+    const stop = listenNativeLaunchPath((path) => navigate(path))
+    void consumeNativeLaunchPath().then((path) => {
+      if (path) navigate(path)
+    })
+    return stop
+  }, [navigate])
+  return null
+}
+
 export default function App() {
   return (
     <>
+      <NativeLaunchListener />
       <OfflineBanner />
       <Routes>
         <Route

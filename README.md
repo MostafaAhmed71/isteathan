@@ -169,6 +169,34 @@ npx cap sync ios
 
 البناء الحالي معلَّم **TestFlight Internal Only** (بدون مراجعة أبل للبيتا الخارجية). لإتاحته لمجموعات خارجية أو للمتجر: احذف `--custom-export-options` من `codemagic.yaml` وأضف `beta_groups` إن لزم.
 
+## تطبيق Android (APK)
+
+نفس الواجهة تُغلَّف عبر Capacitor. معرّف التطبيق: `sa.isteathan.app`
+
+يتطلب Android Studio (أو SDK + JDK 17/21). على ويندوز يُستخدم JBR المضمّن في Android Studio ومجلد الـ SDK.
+
+```bash
+npm run apk:release
+```
+
+الملف الناتج: `apk/khurooj-release.apk`. انقله للجهاز وافتحه: أندرويد يحدّث التطبيق **بدون حذف** طالما التوقيع نفسه و`versionCode` أعلى (يُزاد تلقائياً مع كل بناء).
+
+إن كان الجهاز موصولاً بـ USB وتصحيح USB مفعّل:
+
+```bash
+npm run apk:update
+```
+
+يبني نسخة النشر ثم يشغّل `adb install -r` فوق التطبيق الحالي.
+
+التوقيع محفوظ محلياً في `android/keystore/` و`android/keystore.properties` (لا يُرفعان إلى Git). انسخهما احتياطاً؛ بدونهما لا يمكن تحديث التطبيق لاحقاً بنفس التوقيع.
+
+لنسخة التجربة فقط (تُوقَّع بنفس مفتاح النشر إن وُجد المفتاح):
+
+```bash
+npm run apk:debug
+```
+
 ## الرخصة
 
 استخدام داخلي للمدرسة.

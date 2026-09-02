@@ -29,7 +29,14 @@ fi
 
 cd "$DEST"
 
+need_install=0
 if [[ ! -x node_modules/.bin/vite ]]; then
+  need_install=1
+elif [[ package.json -nt node_modules || package-lock.json -nt node_modules ]]; then
+  need_install=1
+fi
+
+if [[ "$need_install" -eq 1 ]]; then
   echo "Installing dependencies in $DEST ..."
   env -u npm_config_devdir npm install
   if [[ -f node_modules/esbuild/install.js ]]; then

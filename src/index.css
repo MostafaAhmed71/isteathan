@@ -212,6 +212,15 @@ body {
   color: #d4af37;
 }
 
+.rx-topbar__sound {
+  border: 1px solid #d4af37;
+  background: #d4af37;
+  color: #06101c;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
 .rx-body {
   flex: 1;
   min-height: 0;
@@ -242,15 +251,24 @@ body {
 }
 
 .rx-call {
-  display: block;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  text-align: start;
-  border: none;
-  padding: 0;
   overflow: hidden;
   background: #0d1f35;
   border: 1px solid #1c3555;
   animation: rx-fade 0.35s ease-out;
+}
+
+.rx-call__main {
+  display: block;
+  width: 100%;
+  margin: 0;
+  text-align: start;
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: inherit;
   cursor: pointer;
 }
 
@@ -325,6 +343,33 @@ body {
   margin: 0.85rem 0 0;
   font-size: 0.8rem;
   color: #6f849e;
+}
+
+.rx-call__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 1.25rem 1.15rem;
+}
+
+.rx-call__approve {
+  min-width: 11rem;
+  border: none;
+  background: #16a34a;
+  color: #fff;
+  padding: 0.95rem 1.85rem;
+  font-size: clamp(1.1rem, 2.2vw, 1.45rem);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.rx-call__approve:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.rx-call__approve:not(:disabled):hover,
+.rx-call__approve:not(:disabled):focus-visible {
+  background: #15803d;
 }
 
 .rx-call--flash {

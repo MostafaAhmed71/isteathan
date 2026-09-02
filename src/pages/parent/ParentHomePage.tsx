@@ -10,6 +10,7 @@ import {
 } from '../../components/ui'
 import { useAuth } from '../../lib/auth'
 import { getNotificationPermission, permissionHelpMessage } from '../../lib/notify'
+import { isNativeApp } from '../../lib/native'
 import { enableParentPushNotifications, notifyStaffOfNewRequest } from '../../lib/push'
 import { supabase } from '../../lib/supabase'
 import { classLabel, type PermissionRequest, type Student } from '../../lib/types'
@@ -57,11 +58,16 @@ export function ParentHomePage() {
   useEffect(() => {
     void load()
     void (async () => {
-      const p = getNotificationPermission()
+      const p = await getNotificationPermission()
       if (p === 'denied' || p === 'insecure') {
         setNotifyHint(permissionHelpMessage(p))
       }
-      if (p === 'granted' && 'serviceWorker' in navigator) {
+      if (p !== 'granted') return
+      if (isNativeApp()) {
+        setNotifyReady(true)
+        return
+      }
+      if ('serviceWorker' in navigator) {
         try {
           const reg = await navigator.serviceWorker.ready
           const sub = await reg.pushManager.getSubscription()

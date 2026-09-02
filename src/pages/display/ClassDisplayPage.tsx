@@ -9,6 +9,7 @@ import {
 import { unlockDisplayAudio } from '../../lib/displayAlert'
 import { useDisplayBoard } from '../../lib/displayBoard'
 import { SCHOOL_LOGO_SRC, SCHOOL_NAME } from '../../lib/brand'
+import { notifyGuardianOfDecision } from '../../lib/push'
 import { supabase } from '../../lib/supabase'
 import { classLabel, type SchoolClass } from '../../lib/types'
 import { useAuth } from '../../lib/auth'
@@ -19,6 +20,8 @@ export function ClassDisplayPage() {
   const [classError, setClassError] = useState('')
   const [soundReady, setSoundReady] = useState(false)
   const [clock, setClock] = useState(() => new Date())
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState('')
 
   useEffect(() => {
     if (!profile) return
@@ -63,31 +66,44 @@ export function ClassDisplayPage() {
     setSoundReady(await unlockDisplayAudio())
   }
 
+  async function approveRequest(requestId: string) {
+    setActionError('')
+    setBusyId(requestId)
+    void unlockDisplayAudio().then(setSoundReady)
+    const { error: err } = await supabase.rpc('decide_permission_request', {
+      p_request_id: requestId,
+      p_decision: 'APPROVED',
+      p_rejection_reason: null,
+    })
+    if (err) {
+      setBusyId(null)
+      setActionError(
+        err.message.includes('تمت معالجته')
+          ? 'تمت معالجة هذا الطلب مسبقاً.'
+          : 'تعذر اعتماد الطلب، حاول مرة أخرى.',
+      )
+      return
+    }
+    const result = await notifyGuardianOfDecision(requestId)
+    setBusyId(null)
+    if (result.error && result.reason !== 'no_subscriptions') {
+      setActionError('تمت الموافقة، وتعذر إرسال إشعار لولي الأمر.')
+    }
+  }
+
   const clockLabel = new Intl.DateTimeFormat('ar-SA', {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
   }).format(clock)
   const now = clock.getTime()
-  const showError = classError || error
+  const showError = classError || error || actionError
   const screenTitle = schoolClass
     ? classLabel(schoolClass.grade, schoolClass.section)
     : 'شاشة الفصل'
 
   return (
     <div className="display-screen">
-      {!soundReady ? (
-        <button type="button" className="display-unlock" onClick={() => void enableSound()}>
-          <img src={SCHOOL_LOGO_SRC} alt={SCHOOL_NAME} />
-          <p className="rx-topbar__school mt-4">{SCHOOL_NAME}</p>
-          <p className="mt-2 text-2xl font-extrabold text-white">شاشة الفصل</p>
-          <p className="mt-2 max-w-lg text-center text-[#8aa0bb]">
-            اضغط لتفعيل الصوت وبدء عرض طلبات الخروج
-          </p>
-          <span className="display-cta">بدء العرض</span>
-        </button>
-      ) : null}
-
       {splash?.kind === 'new' ? (
         <DisplaySplashOverlay kind="new" name={splash.name} />
       ) : null}
@@ -122,6 +138,11 @@ export function ClassDisplayPage() {
             <span className="rx-live-dot" />
             مباشر
           </div>
+          {!soundReady ? (
+            <button type="button" className="rx-topbar__sound" onClick={() => void enableSound()}>
+              تفعيل الصوت
+            </button>
+          ) : null}
           <Link to="/class" className="rx-topbar__close">
             إغلاق
           </Link>
@@ -140,6 +161,10 @@ export function ClassDisplayPage() {
               isNew={flashId === hero.id}
               onActivate={() => selectRequest(hero)}
               now={now}
+              onApprove={
+                hero.status === 'PENDING' ? () => void approveRequest(hero.id) : undefined
+              }
+              approving={busyId === hero.id}
             />
             <DisplayQueueTable
               title="قائمة الانتظار"

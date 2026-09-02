@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">خروج</string>
+    <string name="title_activity_main">خروج</string>
+    <string name="package_name">sa.isteathan.app</string>
+    <string name="custom_url_scheme">sa.isteathan.app</string>
+    <string name="monitor_title">خروج</string>
+    <string name="monitor_text">مراقبة طلبات الخروج تعمل في الخلفية</string>
+    <string name="monitor_channel">مراقبة الخلفية</string>
+    <string name="alerts_channel">تنبيهات الخروج</string>
+    <string name="alert_new_title">طلب خروج جديد</string>
+    <string name="alert_new_body">وصل طلب خروج للطالب: %1$s</string>
+    <string name="alert_approved_title">تمت الموافقة على الطلب</string>
+    <string name="alert_approved_body">تمت الموافقة على طلب خروج %1$s.</string>
+    <string name="alert_rejected_title">تم رفض الطلب</string>
+    <string name="alert_rejected_body">تم رفض طلب خروج %1$s.</string>
+    <string name="alert_student_fallback">طالب</string>
+    <string name="overlay_kicker">خروج — الفصل</string>
+    <string name="overlay_title_many">%1$d طلبات خروج بانتظار الرد</string>
+    <string name="overlay_open">شاشة العرض</string>
+    <string name="overlay_hide">إخفاء</string>
+    <string name="overlay_more">و %1$d آخرون</string>
+</resources>

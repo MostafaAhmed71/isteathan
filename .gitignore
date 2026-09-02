@@ -47,3 +47,20 @@ ios/App/output
 ios/DerivedData
 **/xcuserdata/
 *.xcuserstate
+
+# Capacitor / Android
+android/.gradle
+android/build
+android/app/build
+android/app/release
+android/captures
+android/.idea
+android/local.properties
+android/keystore.properties
+android/keystore/*.jks
+android/keystore/*.keystore
+android/*.iml
+android/*.iml
+android/app/*.iml
+android/capacitor-cordova-android-plugins
+apk/

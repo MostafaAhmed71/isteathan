@@ -9,6 +9,9 @@ const config: CapacitorConfig = {
     backgroundColor: '#0b1f3f',
     preferredContentMode: 'mobile',
   },
+  android: {
+    backgroundColor: '#0b1f3f',
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 1200,
@@ -23,6 +26,9 @@ const config: CapacitorConfig = {
     Keyboard: {
       resize: 'body',
       resizeOnFullScreen: true,
+    },
+    LocalNotifications: {
+      iconColor: '#0b1f3f',
     },
   },
 }

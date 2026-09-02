@@ -1,7 +1,7 @@
 {
   "name": "isteathan",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "node scripts/run.mjs vite:dev",
@@ -14,6 +14,10 @@
     "check:pwa": "node scripts/check-pwa.mjs",
     "cap:sync": "npx cap sync",
     "cap:ios": "npx cap sync ios",
+    "cap:android": "npx cap sync android",
+    "apk:debug": "node scripts/build-apk.mjs",
+    "apk:release": "node scripts/build-apk.mjs --release",
+    "apk:update": "node scripts/build-apk.mjs --release --install",
     "db:apply": "node scripts/apply-migrations.mjs",
     "db:seed": "node scripts/seed.mjs",
     "db:create-admin": "node scripts/create-admin.mjs",
@@ -22,10 +26,12 @@
     "linux:sync": "bash scripts/dev-linux.sh"
   },
   "dependencies": {
+    "@capacitor/android": "^7.6.8",
     "@capacitor/app": "^7.1.2",
     "@capacitor/core": "^7.6.8",
     "@capacitor/ios": "^7.6.8",
     "@capacitor/keyboard": "^7.0.6",
+    "@capacitor/local-notifications": "^7.0.7",
     "@capacitor/splash-screen": "^7.0.5",
     "@capacitor/status-bar": "^7.0.6",
     "@supabase/supabase-js": "^2.50.0",

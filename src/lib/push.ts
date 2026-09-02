@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { isNativeApp } from './native'
 import {
   ensureNotificationPermission,
   ensureServiceWorkerReady,
@@ -134,10 +135,20 @@ export async function enableParentPushNotifications(): Promise<PushEnableResult>
       subscribed: false,
       message:
         permission === 'denied'
-          ? 'الإشعارات مرفوضة من إعدادات المتصفح.'
+          ? isNativeApp()
+            ? 'الإشعارات مرفوضة. من إعدادات الجهاز → التطبيقات → خروج → إشعارات، فعّلها ثم اضغط «تفعيل الإشعارات».'
+            : 'الإشعارات مرفوضة من إعدادات المتصفح.'
           : permission === 'insecure'
             ? 'يلزم فتح الموقع عبر HTTPS لتفعيل إشعارات الخلفية.'
             : 'لم يتم منح إذن الإشعارات.',
+    }
+  }
+
+  if (isNativeApp()) {
+    return {
+      permission,
+      subscribed: true,
+      message: 'تم تفعيل إشعارات التطبيق. سيصلك التنبيه في شريط الإشعارات حتى لو كان التطبيق في الخلفية.',
     }
   }
 
@@ -161,6 +172,7 @@ export async function enableParentPushNotifications(): Promise<PushEnableResult>
 /** Quietly refresh subscription whenever parent opens the app. */
 export async function refreshPushSubscriptionSilent(): Promise<boolean> {
   if (typeof window === 'undefined') return false
+  if (isNativeApp()) return false
   if (!window.isSecureContext) return false
   if (!('Notification' in window) || Notification.permission !== 'granted') return false
 

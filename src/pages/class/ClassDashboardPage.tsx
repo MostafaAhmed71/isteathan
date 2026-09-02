@@ -8,6 +8,11 @@ import {
   permissionHelpMessage,
 } from '../../lib/notify'
 import { enableParentPushNotifications, notifyGuardianOfDecision } from '../../lib/push'
+import { isNativeApp } from '../../lib/native'
+import {
+  checkOverlayPermission,
+  requestOverlayPermission,
+} from '../../lib/backgroundMonitor'
 import { supabase } from '../../lib/supabase'
 import {
   classLabel,
@@ -38,6 +43,7 @@ export function ClassDashboardPage() {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [notifyReady, setNotifyReady] = useState(false)
+  const [overlayReady, setOverlayReady] = useState(false)
 
   const load = useCallback(async (classId: string) => {
     const [pendingRes, historyRes] = await Promise.all([
@@ -64,6 +70,19 @@ export function ClassDashboardPage() {
     setError('')
   }, [])
 
+  async function enableOverlay() {
+    const granted = await requestOverlayPermission()
+    if (granted) {
+      setOverlayReady(true)
+      setToast('النافذة العائمة مفعّلة. ارجع للشرح وستظهر البطاقة فوق السبورة عند وصول طلب.')
+      setError('')
+      return
+    }
+    setError(
+      'من الشاشة التي فُتحت: فعّل الظهور فوق التطبيقات لتطبيق خروج، ثم ارجع هنا.',
+    )
+  }
+
   async function enableNotifications() {
     const result = await enableParentPushNotifications()
     setNotifyReady(result.subscribed)
@@ -76,7 +95,17 @@ export function ClassDashboardPage() {
   }
 
   useEffect(() => {
-    setNotifyReady(getNotificationPermission() === 'granted')
+    void getNotificationPermission().then((p) => setNotifyReady(p === 'granted'))
+    if (!isNativeApp()) return
+    const refreshOverlay = () => {
+      void checkOverlayPermission().then(setOverlayReady)
+    }
+    refreshOverlay()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refreshOverlay()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
 
   useEffect(() => {
@@ -191,7 +220,9 @@ export function ClassDashboardPage() {
       {toast ? (
         <Toast
           message={toast}
-          tone={toast.includes('إشعار خلفية') ? 'success' : 'warning'}
+          tone={
+            toast.includes('إشعار خلفية') || toast.includes('العائمة') ? 'success' : 'warning'
+          }
           onClose={() => setToast(null)}
         />
       ) : null}
@@ -213,6 +244,17 @@ export function ClassDashboardPage() {
                 الإشعارات مفعّلة
               </span>
             )}
+            {isNativeApp() ? (
+              !overlayReady ? (
+                <SecondaryButton type="button" onClick={() => void enableOverlay()}>
+                  تفعيل النافذة العائمة
+                </SecondaryButton>
+              ) : (
+                <span className="self-center text-sm font-semibold text-[var(--color-approved)]">
+                  النافذة العائمة مفعّلة
+                </span>
+              )
+            ) : null}
             <SecondaryButton type="button" onClick={() => void signOut()}>
               تسجيل الخروج
             </SecondaryButton>
@@ -221,6 +263,13 @@ export function ClassDashboardPage() {
       >
         {loading ? <p className="text-[var(--color-muted)]">جاري التحميل...</p> : null}
         <ErrorBox message={error} />
+        {isNativeApp() ? (
+          <p className="mb-4 text-sm text-[var(--color-gold-soft)]">
+            1) اضغط «تفعيل النافذة العائمة» واسمح بالظهور فوق التطبيقات. 2) اترك إشعار المراقبة في
+            الشريط. 3) ارجع لتطبيق الشرح — عند طلب خروج جديد تظهر بطاقة فوق السبورة. 4) اضغط
+            «شاشة العرض» للموافقة مباشرة من شاشة الفصل.
+          </p>
+        ) : null}
 
         <section className="mb-8">
           <h2 className="mb-3 text-lg font-bold text-[var(--color-gold)]">قيد الانتظار</h2>

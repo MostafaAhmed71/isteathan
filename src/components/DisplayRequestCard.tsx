@@ -49,11 +49,15 @@ export function DisplayNowCalling({
   isNew = false,
   onActivate,
   now = Date.now(),
+  onApprove,
+  approving = false,
 }: {
   request: PermissionRequest
   isNew?: boolean
   onActivate: () => void
   now?: number
+  onApprove?: () => void
+  approving?: boolean
 }) {
   const name = request.students?.full_name ?? 'طالب'
   const guardian = request.profiles?.full_name ?? '—'
@@ -64,30 +68,41 @@ export function DisplayNowCalling({
     request.status === 'PENDING'
       ? timeOnly(request.created_at)
       : timeOnly(request.decided_at ?? request.updated_at)
+  const showApprove = Boolean(onApprove) && request.status === 'PENDING'
 
   return (
-    <button
-      type="button"
-      className={`rx-call rx-call--${meta.tone} ${isNew ? 'rx-call--flash' : ''}`}
-      onClick={onActivate}
-    >
-      <div className="rx-call__band">
-        <span className="rx-call__band-label">{meta.callLabel}</span>
-        {isNew ? <span className="rx-call__live">مباشر</span> : null}
-      </div>
-      <div className="rx-call__body">
-        <p className="rx-call__eyebrow">اسم الطالب</p>
-        <h2 className="rx-call__name">{name}</h2>
-        <div className="rx-call__meta">
-          <span>{klass}</span>
-          <span className="rx-call__dot" aria-hidden />
-          <span>ولي الأمر: {guardian}</span>
-          <span className="rx-call__dot" aria-hidden />
-          <span>{when}</span>
+    <article className={`rx-call rx-call--${meta.tone} ${isNew ? 'rx-call--flash' : ''}`}>
+      <button type="button" className="rx-call__main" onClick={onActivate}>
+        <div className="rx-call__band">
+          <span className="rx-call__band-label">{meta.callLabel}</span>
+          {isNew ? <span className="rx-call__live">مباشر</span> : null}
         </div>
-        <p className="rx-call__hint">اضغط لإعادة الإعلان الصوتي</p>
-      </div>
-    </button>
+        <div className="rx-call__body">
+          <p className="rx-call__eyebrow">اسم الطالب</p>
+          <h2 className="rx-call__name">{name}</h2>
+          <div className="rx-call__meta">
+            <span>{klass}</span>
+            <span className="rx-call__dot" aria-hidden />
+            <span>ولي الأمر: {guardian}</span>
+            <span className="rx-call__dot" aria-hidden />
+            <span>{when}</span>
+          </div>
+          <p className="rx-call__hint">اضغط لإعادة الإعلان الصوتي</p>
+        </div>
+      </button>
+      {showApprove ? (
+        <div className="rx-call__actions">
+          <button
+            type="button"
+            className="rx-call__approve"
+            onClick={onApprove}
+            disabled={approving}
+          >
+            {approving ? 'جاري الموافقة...' : 'موافقة'}
+          </button>
+        </div>
+      ) : null}
+    </article>
   )
 }
 

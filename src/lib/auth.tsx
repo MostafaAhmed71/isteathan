@@ -9,6 +9,7 @@ import {
 } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from './supabase'
+import { syncBackgroundMonitor, stopBackgroundMonitor } from './backgroundMonitor'
 import type { Profile, UserRole } from './types'
 
 interface ParentSignUpInput {
@@ -52,20 +53,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(next)
     if (!next?.user) {
       setProfile(null)
+      void stopBackgroundMonitor()
       return
     }
     try {
       const p = await fetchProfile(next.user.id)
       if (p && !p.is_active) {
+        await stopBackgroundMonitor()
         await supabase.auth.signOut()
         setProfile(null)
         setSession(null)
         throw new Error('هذا الحساب غير نشط. راجع إدارة المدرسة.')
       }
       setProfile(p)
+      void syncBackgroundMonitor(p)
     } catch (err) {
       console.error(err)
       setProfile(null)
+      void stopBackgroundMonitor()
     }
   }, [])
 
@@ -139,6 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signOut = useCallback(async () => {
+    await stopBackgroundMonitor()
     await supabase.auth.signOut()
     setProfile(null)
     setSession(null)
