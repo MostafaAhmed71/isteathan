@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # /mnt/E is NTFS (fuseblk, noexec) — npm binaries cannot run there.
 # Sync project to an ext4 path and run the given npm script there.
+# On CI/Vercel (or when rsync is missing), run in-place instead.
 set -euo pipefail
 
 SRC="$(cd "$(dirname "$0")/.." && pwd)"
@@ -8,13 +9,27 @@ DEST="${ISTEATHAN_LINUX_DIR:-$HOME/work/isteathan}"
 SCRIPT="${1:-vite:dev}"
 shift || true
 
+run_in_place() {
+  cd "$SRC"
+  env -u npm_config_devdir npm run "$SCRIPT" -- "$@"
+  exit $?
+}
+
+# Hosting / CI already has a normal executable filesystem.
+if [[ "${VERCEL:-}" == "1" || "${CI:-}" == "true" || -n "${VERCEL_ENV:-}" ]]; then
+  run_in_place "$@"
+fi
+
 mkdir -p "$(dirname "$DEST")"
 
 # If we are already inside the Linux working copy, just run the script.
 if [[ "$SRC" == "$DEST" ]]; then
-  cd "$DEST"
-  env -u npm_config_devdir npm run "$SCRIPT" -- "$@"
-  exit $?
+  run_in_place "$@"
+fi
+
+if ! command -v rsync >/dev/null 2>&1; then
+  echo "rsync not found — running npm run $SCRIPT in-place"
+  run_in_place "$@"
 fi
 
 # --delete drops stale files left in $DEST from older trees (e.g. renamed pages)
@@ -61,7 +76,11 @@ STATUS=$?
 # workspace so it is the folder actually uploaded to hosting.
 if [[ $STATUS -eq 0 && "$SCRIPT" == vite:build && -d "$DEST/dist" ]]; then
   rm -rf "$SRC/dist"
-  rsync -a "$DEST/dist/" "$SRC/dist/"
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a "$DEST/dist/" "$SRC/dist/"
+  else
+    cp -a "$DEST/dist" "$SRC/dist"
+  fi
   echo "Build copied to $SRC/dist"
 fi
 
