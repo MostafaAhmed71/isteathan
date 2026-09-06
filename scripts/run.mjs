@@ -3,8 +3,9 @@
  * Cross-platform npm script runner.
  *
  * Windows: run Vite locally (bash / rsync are not required).
- * Linux: keep the NTFS/noexec workaround in scripts/run-linux.sh
- *        (copies to ~/work/isteathan then runs there).
+ * CI / Vercel: run Vite in-place (normal Linux FS; no rsync sync needed).
+ * Local Linux: keep the NTFS/noexec workaround in scripts/run-linux.sh
+ *              (copies to ~/work/isteathan then runs there).
  */
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
@@ -14,6 +15,11 @@ import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const script = process.argv[2] || 'vite:dev'
 const extra = process.argv.slice(3)
+
+const isCi =
+  process.env.VERCEL === '1' ||
+  process.env.CI === 'true' ||
+  Boolean(process.env.VERCEL_ENV)
 
 function quote(value) {
   return `"${String(value).replace(/"/g, '\\"')}"`
@@ -43,9 +49,13 @@ function run(command, args = [], { shell = false } = {}) {
   })
 }
 
-if (process.platform === 'win32') {
+function runNpmScriptDirect() {
   const args = extra.length ? ['--', ...extra.map(quote)] : []
   run(`npm run ${quote(script)}`, args, { shell: true })
+}
+
+if (process.platform === 'win32' || isCi) {
+  runNpmScriptDirect()
 } else {
   const wrapper = path.join(root, 'scripts', 'run-linux.sh')
   if (existsSync(wrapper)) {
