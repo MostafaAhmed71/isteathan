@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
         recipientType: "PARENT",
         messageType: "REQUEST_CREATED",
         phone: guardian?.phone ?? "",
-        text: `تم استلام طلب خروج الطالب ${studentName} بنجاح، وجارٍ معالجة الطلب من قبل المدرسة.`,
+        text: `تم استقبال الطلب`,
       });
     }
 
@@ -187,14 +187,7 @@ Deno.serve(async (req) => {
         recipientType: "PARENT",
         messageType: "REQUEST_APPROVED",
         phone: guardian?.phone ?? "",
-        text: [
-          `تمت الموافقة على طلب خروج الطالب ${studentName}.`,
-          "",
-          `الصف: ${GRADE[grade] ?? grade}`,
-          `الفصل: ${section}`,
-          "",
-          "الحالة: تمت الموافقة.",
-        ].join("\n"),
+        text: `ابنك في الطريق إليك`,
       });
     }
 

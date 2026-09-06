@@ -191,10 +191,10 @@ export function notifyDecisionPlugin(): Plugin {
 
             const name = studentNameOf(request)
             const title =
-              request.status === 'APPROVED' ? 'تمت الموافقة على الطلب' : 'تم رفض الطلب'
+              request.status === 'APPROVED' ? 'ابنك في الطريق إليك' : 'تم رفض الطلب'
             const text =
               request.status === 'APPROVED'
-                ? `تمت الموافقة على طلب خروج ${name}.`
+                ? `ابنك في الطريق إليك.`
                 : `تم رفض طلب خروج ${name}${
                     request.rejection_reason ? `: ${request.rejection_reason}` : '.'
                   }`

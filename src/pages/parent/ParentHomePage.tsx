@@ -149,7 +149,7 @@ export function ParentHomePage() {
     if (requestId) {
       void notifyStaffOfNewRequest(requestId)
     }
-    setRequestInfo(`تم إرسال طلب خروج لـ ${student.full_name} بنجاح. الحالة: قيد الانتظار.`)
+    setRequestInfo(`تم إرسال الطلب بنجاح لـ ${student.full_name}.`)
     await load()
   }
 
@@ -242,7 +242,7 @@ export function ParentHomePage() {
                 {sendingId === s.id
                   ? 'جاري الإرسال...'
                   : pending
-                    ? 'طلب قيد المراجعة'
+                    ? 'تم إرسال الطلب بنجاح'
                     : blockedByTime
                       ? `متاح ${requestWindowLabel(grade)}`
                       : 'طلب خروج'}

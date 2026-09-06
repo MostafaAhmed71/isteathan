@@ -601,7 +601,7 @@ export function ParentGuidePage() {
                   <p className="mb-3 text-sm text-[var(--color-muted)]">الصف الثالث · أ</p>
                   {step === 'request-sent' ? (
                     <p className="mb-3 text-sm font-semibold text-[var(--color-pending)]">
-                      حالة الطلب: قيد المراجعة
+                      حالة الطلب: تم إرسال الطلب بنجاح
                     </p>
                   ) : (
                     <p className="mb-3 text-sm text-[var(--color-muted)]">لا يوجد طلب سابق لهذا الابن.</p>
@@ -615,7 +615,7 @@ export function ParentGuidePage() {
                     go('request-sent')
                   }}
                 >
-                  {step === 'request-sent' ? 'طلب قيد المراجعة' : 'طلب خروج'}
+                  {step === 'request-sent' ? 'تم إرسال الطلب بنجاح' : 'طلب خروج'}
                 </button>
                 </div>
               </>

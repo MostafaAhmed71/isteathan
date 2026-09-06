@@ -73,10 +73,10 @@ Deno.serve(async (req) => {
     const studentName =
       (request.students as { full_name?: string } | null)?.full_name ?? 'الطالب'
     const title =
-      request.status === 'APPROVED' ? 'تمت الموافقة على الطلب' : 'تم رفض الطلب'
+      request.status === 'APPROVED' ? 'ابنك في الطريق إليك' : 'تم رفض الطلب'
     const bodyText =
       request.status === 'APPROVED'
-        ? `تمت الموافقة على طلب خروج ${studentName}.`
+        ? `ابنك في الطريق إليك.`
         : `تم رفض طلب خروج ${studentName}${
             request.rejection_reason ? `: ${request.rejection_reason}` : '.'
           }`

@@ -10,8 +10,8 @@
     <string name="alerts_channel">تنبيهات الخروج</string>
     <string name="alert_new_title">طلب خروج جديد</string>
     <string name="alert_new_body">وصل طلب خروج للطالب: %1$s</string>
-    <string name="alert_approved_title">تمت الموافقة على الطلب</string>
-    <string name="alert_approved_body">تمت الموافقة على طلب خروج %1$s.</string>
+    <string name="alert_approved_title">ابنك في الطريق إليك</string>
+    <string name="alert_approved_body">ابنك في الطريق إليك.</string>
     <string name="alert_rejected_title">تم رفض الطلب</string>
     <string name="alert_rejected_body">تم رفض طلب خروج %1$s.</string>
     <string name="alert_student_fallback">طالب</string>

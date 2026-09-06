@@ -64,7 +64,7 @@ export const GRADE_LABELS: Record<number, string> = {
 }
 
 export const STATUS_LABELS: Record<RequestStatus, string> = {
-  PENDING: 'قيد الانتظار',
+  PENDING: 'تم إرسال الطلب بنجاح',
   APPROVED: 'تمت الموافقة',
   REJECTED: 'تم الرفض',
   CANCELLED: 'ملغي',

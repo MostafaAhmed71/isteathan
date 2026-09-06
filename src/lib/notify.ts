@@ -189,10 +189,10 @@ export function alertRequestDecision(
   status: 'APPROVED' | 'REJECTED',
   rejectionReason?: string | null,
 ) {
-  const title = status === 'APPROVED' ? 'تمت الموافقة على الطلب' : 'تم رفض الطلب'
+  const title = status === 'APPROVED' ? 'ابنك في الطريق إليك' : 'تم رفض الطلب'
   const body =
     status === 'APPROVED'
-      ? `تمت الموافقة على طلب خروج ${studentName}.`
+      ? `ابنك في الطريق إليك.`
       : `تم رفض طلب خروج ${studentName}${
           rejectionReason?.trim() ? `: ${rejectionReason.trim()}` : '.'
         }`

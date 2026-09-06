@@ -126,23 +126,16 @@ export function supervisorNewRequestMessage(input: {
   ].join('\n')
 }
 
-export function parentCreatedMessage(studentName: string): string {
-  return `تم استلام طلب خروج الطالب ${studentName} بنجاح، وجارٍ معالجة الطلب من قبل المدرسة.`
+export function parentCreatedMessage(_studentName: string): string {
+  return `تم استقبال الطلب`
 }
 
-export function parentApprovedMessage(input: {
+export function parentApprovedMessage(_input: {
   studentName: string
   grade: number
   section: string
 }): string {
-  return [
-    `تمت الموافقة على طلب خروج الطالب ${input.studentName}.`,
-    '',
-    `الصف: ${gradeLabel(input.grade)}`,
-    `الفصل: ${input.section}`,
-    '',
-    'الحالة: تمت الموافقة.',
-  ].join('\n')
+  return `ابنك في الطريق إليك.`
 }
 
 export function parentRejectedMessage(input: {

@@ -10,16 +10,16 @@ function stepsForStatus(status: RequestStatus): {
 }[] {
   if (status === 'PENDING') {
     return [
-      { key: 'sent', label: 'تم الإرسال', state: 'done' },
-      { key: 'review', label: 'قيد المراجعة', state: 'current' },
+      { key: 'sent', label: 'تم إرسال الطلب بنجاح', state: 'done' },
+      { key: 'review', label: 'تم استقبال الطلب', state: 'current' },
       { key: 'decision', label: 'بانتظار القرار', state: 'upcoming' },
     ]
   }
   if (status === 'APPROVED') {
     return [
-      { key: 'sent', label: 'تم الإرسال', state: 'done' },
-      { key: 'review', label: 'تمت المراجعة', state: 'done' },
-      { key: 'decision', label: 'تمت الموافقة', state: 'done' },
+      { key: 'sent', label: 'تم إرسال الطلب بنجاح', state: 'done' },
+      { key: 'review', label: 'تم استقبال الطلب', state: 'done' },
+      { key: 'decision', label: 'ابنك في الطريق إليك', state: 'done' },
     ]
   }
   if (status === 'REJECTED') {
@@ -39,9 +39,9 @@ function stepsForStatus(status: RequestStatus): {
 function statusMessage(status: RequestStatus): string {
   switch (status) {
     case 'PENDING':
-      return 'طلبك وصل لإدارة الفصل، وجاري مراجعته الآن.'
+      return 'تم إرسال الطلب بنجاح، وتم استقباله لدى المدرسة.'
     case 'APPROVED':
-      return 'تمت الموافقة على طلب الخروج.'
+      return 'ابنك في الطريق إليك.'
     case 'REJECTED':
       return 'تم رفض طلب الخروج.'
     case 'CANCELLED':
