@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { APP_NAME_SHORT } from '../lib/brand'
 import { isNativeApp } from '../lib/native'
 
 const DISMISS_KEY = 'isteathan-install-dismissed'
@@ -85,7 +86,7 @@ export function InstallPrompt() {
     >
       {showAndroid && (
         <div className="mx-auto max-w-md">
-          <p className="font-bold text-[var(--color-gold-soft)]">تثبيت تطبيق خروج</p>
+          <p className="font-bold text-[var(--color-gold-soft)]">تثبيت {APP_NAME_SHORT}</p>
           <p className="mt-1 mb-3 text-sm text-[var(--color-muted)]">
             ثبّت التطبيق على الشاشة الرئيسية للوصول السريع بدون شريط المتصفح.
           </p>
@@ -102,7 +103,7 @@ export function InstallPrompt() {
 
       {!showAndroid && showIos && (
         <div className="mx-auto max-w-md">
-          <p className="font-bold text-[var(--color-gold-soft)]">إضافة خروج للشاشة الرئيسية</p>
+          <p className="font-bold text-[var(--color-gold-soft)]">إضافة {APP_NAME_SHORT} للشاشة الرئيسية</p>
           <p className="mt-1 mb-3 text-sm text-[var(--color-muted)]">
             على آيفون: اضغط مشاركة ثم «إضافة إلى الشاشة الرئيسية».
           </p>

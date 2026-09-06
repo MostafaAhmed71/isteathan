@@ -61,7 +61,7 @@ export function ParentRegisterPage() {
 
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <TextField
-            label="الاسم الكامل"
+            label="اسم ولي الأمر"
             value={form.full_name}
             onChange={(e) => setForm({ ...form, full_name: e.target.value })}
             required

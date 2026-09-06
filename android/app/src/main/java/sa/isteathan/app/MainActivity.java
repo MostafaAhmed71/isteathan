@@ -32,6 +32,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(BackgroundMonitorPlugin.class);
+        registerPlugin(AppUpdatePlugin.class);
         super.onCreate(savedInstanceState);
         stashOpenPath(getIntent());
         if (getBridge() != null && getBridge().getWebView() != null) {

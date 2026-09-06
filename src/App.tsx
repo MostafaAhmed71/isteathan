@@ -1,11 +1,13 @@
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { InstallPrompt } from './components/InstallPrompt'
+import { AppUpdateBanner } from './components/AppUpdateBanner'
 import { OfflineBanner } from './components/OfflineBanner'
 import { ProtectedRoute, PublicOnly } from './components/ProtectedRoute'
 import { listenNativeLaunchPath, consumeNativeLaunchPath } from './lib/backgroundMonitor'
 import { LoginPage } from './pages/LoginPage'
 import { ParentRegisterPage } from './pages/ParentRegisterPage'
+import { ParentGuidePage } from './pages/ParentGuidePage'
 import { SetupAdminPage } from './pages/SetupAdminPage'
 import { ParentLayout } from './pages/parent/ParentLayout'
 import { ParentHomePage } from './pages/parent/ParentHomePage'
@@ -59,6 +61,7 @@ export default function App() {
             </PublicOnly>
           }
         />
+        <Route path="/guide" element={<ParentGuidePage />} />
         <Route path="/setup" element={<SetupAdminPage />} />
 
         <Route
@@ -122,6 +125,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
       <InstallPrompt />
+      <AppUpdateBanner />
     </>
   )
 }

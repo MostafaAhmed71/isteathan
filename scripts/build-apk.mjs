@@ -91,6 +91,30 @@ function bumpVersionCode() {
   return next
 }
 
+function readVersionName() {
+  const gradlePath = join(androidDir, 'app', 'build.gradle')
+  const text = readFileSync(gradlePath, 'utf8')
+  const match = text.match(/versionName\s+"([^"]+)"/)
+  return match ? match[1] : '1.0.0'
+}
+
+function writeUpdateManifest(versionCode, versionName) {
+  const apkUrl = process.env.APP_UPDATE_APK_URL || '/apk/khurooj-release.apk'
+  const manifest = {
+    versionCode,
+    versionName,
+    apkUrl,
+    notes: process.env.APP_UPDATE_NOTES || '',
+    publishedAt: new Date().toISOString(),
+  }
+  const publicDir = join(root, 'public')
+  mkdirSync(publicDir, { recursive: true })
+  const manifestPath = join(publicDir, 'app-update.json')
+  writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
+  console.log(`Update manifest: public/app-update.json (versionCode ${versionCode})`)
+  console.log(`Set VITE_APP_UPDATE_MANIFEST_URL to your hosted URL, e.g. https://your-site.com/app-update.json`)
+}
+
 async function installOnDevice(apkPath) {
   const adb = join(androidHome, 'platform-tools', isWin ? 'adb.exe' : 'adb')
   if (!existsSync(adb)) {
@@ -119,6 +143,11 @@ if (release && !existsSync(join(androidDir, 'keystore.properties'))) {
 }
 
 bumpVersionCode()
+const versionCode = Number(
+  readFileSync(join(androidDir, 'app', 'build.gradle'), 'utf8').match(/versionCode\s+(\d+)/)?.[1] ?? 0,
+)
+const versionName = readVersionName()
+if (versionCode) writeUpdateManifest(versionCode, versionName)
 
 await run(isWin ? 'npm.cmd' : 'npm', ['run', 'vite:build'])
 await run(isWin ? 'npx.cmd' : 'npx', ['cap', 'sync', 'android'])

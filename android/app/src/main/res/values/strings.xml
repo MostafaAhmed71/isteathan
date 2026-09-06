@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">خروج</string>
-    <string name="title_activity_main">خروج</string>
+    <string name="app_name">تطبيق خروج ابتدائية نخبة الشمال الأهلية</string>
+    <string name="title_activity_main">تطبيق خروج ابتدائية نخبة الشمال الأهلية</string>
     <string name="package_name">sa.isteathan.app</string>
     <string name="custom_url_scheme">sa.isteathan.app</string>
-    <string name="monitor_title">خروج</string>
+    <string name="monitor_title">خروج — نخبة الشمال</string>
     <string name="monitor_text">مراقبة طلبات الخروج تعمل في الخلفية</string>
     <string name="monitor_channel">مراقبة الخلفية</string>
     <string name="alerts_channel">تنبيهات الخروج</string>
@@ -19,5 +19,10 @@
     <string name="overlay_title_many">%1$d طلبات خروج بانتظار الرد</string>
     <string name="overlay_open">شاشة العرض</string>
     <string name="overlay_hide">إخفاء</string>
+    <string name="overlay_approve">موافقة</string>
+    <string name="overlay_approving">جاري الموافقة...</string>
+    <string name="overlay_approve_failed">تعذر اعتماد الطلب، حاول مرة أخرى.</string>
+    <string name="overlay_approve_done">تمت الموافقة على %1$s</string>
     <string name="overlay_more">و %1$d آخرون</string>
+    <string name="overlay_others_label">طلبات أخرى بانتظار الرد:</string>
 </resources>

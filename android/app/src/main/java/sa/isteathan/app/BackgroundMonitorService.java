@@ -71,7 +71,21 @@ public class BackgroundMonitorService extends Service {
             wakeLock.setReferenceCounted(false);
             wakeLock.acquire();
         }
-        overlay = new RequestOverlay(this);
+        overlay = new RequestOverlay(this, (requestId, studentName) -> {
+            if (handler != null) {
+                handler.post(() -> {
+                    try {
+                        approveRequest(requestId, studentName);
+                    } catch (Exception err) {
+                        android.util.Log.w("IsteathanMonitor", "approve failed", err);
+                        if (overlay != null) {
+                            overlay.setApproving(false);
+                            overlay.showStatus(getString(R.string.overlay_approve_failed));
+                        }
+                    }
+                });
+            }
+        });
         worker = new HandlerThread("isteathan-monitor");
         worker.start();
         handler = new Handler(worker.getLooper());
@@ -203,26 +217,116 @@ public class BackgroundMonitorService extends Service {
 
     private void handleStaff(JSONArray rows) throws Exception {
         Set<String> current = new HashSet<>();
-        List<String> names = new ArrayList<>();
+        List<RequestOverlay.PendingItem> items = new ArrayList<>();
         boolean fresh = false;
         for (int i = 0; i < rows.length(); i++) {
             JSONObject row = rows.getJSONObject(i);
             String id = row.optString("id", "");
             if (id.isEmpty()) continue;
             current.add(id);
-            names.add(studentName(row));
+            String name = studentName(row);
+            items.add(new RequestOverlay.PendingItem(id, name));
             if (primed && !knownPending.contains(id)) {
                 fresh = true;
                 showAlert(
                     getString(R.string.alert_new_title),
-                    getString(R.string.alert_new_body, studentName(row)),
+                    getString(R.string.alert_new_body, name),
                     id.hashCode()
                 );
             }
         }
         knownPending.clear();
         knownPending.addAll(current);
-        if (overlay != null) overlay.show(names, fresh);
+        if (overlay != null) overlay.show(items, fresh);
+    }
+
+    private void approveRequest(String requestId, String studentName) throws Exception {
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        String base = stripSlash(prefs.getString("supabaseUrl", ""));
+        String anon = prefs.getString("anonKey", "");
+        String access = prefs.getString("accessToken", "");
+        if (base.isEmpty() || anon.isEmpty() || access.isEmpty() || requestId == null || requestId.isEmpty()) {
+            if (overlay != null) {
+                overlay.setApproving(false);
+                overlay.showStatus(getString(R.string.overlay_approve_failed));
+            }
+            return;
+        }
+
+        JSONObject body = new JSONObject();
+        body.put("p_request_id", requestId);
+        body.put("p_decision", "APPROVED");
+        body.put("p_rejection_reason", JSONObject.NULL);
+
+        String url = base + "/rest/v1/rpc/decide_permission_request";
+        HttpResult result = http("POST", url, anon, access, body.toString());
+        if (result.code == 401) {
+            if (refreshSession(prefs, base, anon)) {
+                access = prefs.getString("accessToken", "");
+                result = http("POST", url, anon, access, body.toString());
+            }
+        }
+
+        if (result.code < 200 || result.code >= 300) {
+            android.util.Log.w("IsteathanMonitor", "approve HTTP " + result.code + " " + result.body);
+            if (overlay != null) {
+                overlay.setApproving(false);
+                overlay.showStatus(getString(R.string.overlay_approve_failed));
+            }
+            return;
+        }
+
+        knownPending.remove(requestId);
+        String approvedName =
+            studentName != null && !studentName.trim().isEmpty()
+                ? studentName.trim()
+                : getString(R.string.alert_student_fallback);
+
+        if (overlay != null) {
+            overlay.showStatus(getString(R.string.overlay_approve_done, approvedName));
+            overlay.setApproving(false);
+        }
+
+        notifyDecisionBestEffort(base, anon, access, requestId);
+        pollOnce();
+    }
+
+    private void notifyDecisionBestEffort(
+        String base,
+        String anon,
+        String access,
+        String requestId
+    ) {
+        try {
+            JSONObject body = new JSONObject();
+            body.put("request_id", requestId);
+            String functionsUrl = base + "/functions/v1/notify-decision";
+            HttpResult notify = http("POST", functionsUrl, anon, access, body.toString());
+            if (notify.code < 200 || notify.code >= 300) {
+                android.util.Log.w(
+                    "IsteathanMonitor",
+                    "notify-decision HTTP " + notify.code + " " + notify.body
+                );
+            }
+            HttpResult whatsapp = http(
+                "POST",
+                base + "/functions/v1/whatsapp-notify",
+                anon,
+                access,
+                new JSONObject()
+                    .put("request_id", requestId)
+                    .put("event", "decision")
+                    .toString()
+            );
+            if (whatsapp.code < 200 || whatsapp.code >= 300) {
+                android.util.Log.w(
+                    "IsteathanMonitor",
+                    "whatsapp-notify HTTP " + whatsapp.code + " " + whatsapp.body
+                );
+            }
+        } catch (Exception err) {
+            android.util.Log.w("IsteathanMonitor", "notify after approve failed", err);
+        }
     }
 
     private void handleParent(JSONArray rows) throws Exception {

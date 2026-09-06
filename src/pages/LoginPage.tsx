@@ -60,11 +60,16 @@ export function LoginPage() {
           </PrimaryButton>
         </form>
 
-        <div className="mt-6">
-          <p className="mb-3 text-center text-sm text-[var(--color-muted)]">ولي أمر جديد؟</p>
+        <div className="mt-6 space-y-3">
+          <p className="mb-1 text-center text-sm text-[var(--color-muted)]">ولي أمر جديد؟</p>
           <Link to="/register">
             <SecondaryButton type="button" full>
               إنشاء حساب ولي أمر
+            </SecondaryButton>
+          </Link>
+          <Link to="/guide">
+            <SecondaryButton type="button" full>
+              شرح تفاعلي مع الصوت
             </SecondaryButton>
           </Link>
         </div>

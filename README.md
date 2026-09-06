@@ -189,6 +189,18 @@ npm run apk:update
 
 يبني نسخة النشر ثم يشغّل `adb install -r` فوق التطبيق الحالي.
 
+### التحديث من داخل التطبيق
+
+1. في `.env` عيّن رابط ملف التحديث على الاستضافة:
+   ```env
+   VITE_APP_UPDATE_MANIFEST_URL=https://your-site.com/app-update.json
+   ```
+2. عند كل `npm run apk:release` يُنشأ `public/app-update.json` تلقائياً.
+3. ارفع مع موقعك:
+   - `dist/app-update.json` (يُنسخ من `public/` عند البناء)
+   - `apk/khurooj-release.apk` (مثلاً في `public_html/apk/`)
+4. عند فتح التطبيق يظهر تنبيه «تحديث جديد» ويُنزّل ويثبّت فوق النسخة الحالية.
+
 التوقيع محفوظ محلياً في `android/keystore/` و`android/keystore.properties` (لا يُرفعان إلى Git). انسخهما احتياطاً؛ بدونهما لا يمكن تحديث التطبيق لاحقاً بنفس التوقيع.
 
 لنسخة التجربة فقط (تُوقَّع بنفس مفتاح النشر إن وُجد المفتاح):

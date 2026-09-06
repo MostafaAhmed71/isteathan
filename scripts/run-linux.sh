@@ -17,10 +17,19 @@ if [[ "$SRC" == "$DEST" ]]; then
   exit $?
 fi
 
-rsync -a \
+# --delete drops stale files left in $DEST from older trees (e.g. renamed pages)
+# so tsc does not typecheck orphans that no longer exist in $SRC.
+rsync -a --delete \
   --exclude node_modules \
   --exclude dist \
   --exclude .git \
+  --exclude apk \
+  --exclude android/app/build \
+  --exclude android/.gradle \
+  --exclude android/capacitor-cordova-android-plugins/build \
+  --exclude android/keystore \
+  --exclude android/keystore.properties \
+  --exclude android/local.properties \
   "$SRC/" "$DEST/"
 
 if [[ -f "$SRC/.env" && "$SRC/.env" != "$DEST/.env" ]]; then

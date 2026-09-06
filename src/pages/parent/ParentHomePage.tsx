@@ -12,6 +12,12 @@ import { useAuth } from '../../lib/auth'
 import { getNotificationPermission, permissionHelpMessage } from '../../lib/notify'
 import { isNativeApp } from '../../lib/native'
 import { enableParentPushNotifications, notifyStaffOfNewRequest } from '../../lib/push'
+import {
+  canSubmitRequest,
+  isRequestWindowError,
+  requestWindowLabel,
+  requestWindowMessage,
+} from '../../lib/requestWindow'
 import { supabase } from '../../lib/supabase'
 import { classLabel, type PermissionRequest, type Student } from '../../lib/types'
 
@@ -21,12 +27,12 @@ export function ParentHomePage() {
   const [latestByStudent, setLatestByStudent] = useState<Record<string, PermissionRequest>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [confirmStudent, setConfirmStudent] = useState<Student | null>(null)
   const [sendingId, setSendingId] = useState<string | null>(null)
   const [requestInfo, setRequestInfo] = useState('')
   const [requestError, setRequestError] = useState('')
   const [notifyReady, setNotifyReady] = useState(false)
   const [notifyHint, setNotifyHint] = useState('')
+  const [now, setNow] = useState(() => new Date())
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -80,6 +86,11 @@ export function ParentHomePage() {
   }, [load])
 
   useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 15000)
+    return () => window.clearInterval(id)
+  }, [])
+
+  useEffect(() => {
     if (!profile) return
     const channel = supabase
       .channel(`parent-home-requests-${profile.id}`)
@@ -113,18 +124,24 @@ export function ParentHomePage() {
   async function sendRequest(student: Student) {
     setRequestError('')
     setRequestInfo('')
+    const grade = student.classes?.grade ?? student.grade
+    if (!canSubmitRequest(grade, new Date())) {
+      setRequestError(requestWindowMessage(grade) ?? 'لم يحن وقت تقديم الطلبات بعد.')
+      return
+    }
     setSendingId(student.id)
     const { data, error: err } = await supabase.rpc('create_permission_request', {
       p_student_id: student.id,
       p_reason: null,
     })
     setSendingId(null)
-    setConfirmStudent(null)
     if (err) {
       setRequestError(
         err.message.includes('قيد الانتظار')
           ? 'يوجد بالفعل طلب خروج قيد الانتظار لهذا الطالب.'
-          : 'حدث خطأ أثناء إرسال الطلب.',
+          : isRequestWindowError(err.message)
+            ? err.message
+            : 'حدث خطأ أثناء إرسال الطلب.',
       )
       return
     }
@@ -142,6 +159,10 @@ export function ParentHomePage() {
         <ErrorBox message={requestError || error} />
         {requestInfo ? <p className="text-sm text-[var(--color-gold-soft)]">{requestInfo}</p> : null}
         {notifyHint ? <p className="text-sm text-[var(--color-gold-soft)]">{notifyHint}</p> : null}
+        <p className="rounded-xl border border-[rgba(212,175,55,0.35)] px-3 py-2 text-sm text-[var(--color-muted)]">
+          مواعيد تقديم الطلبات (توقيت الرياض): الصفوف الأولية من 11:10 ص حتى 12:30 م، والصفوف العليا من
+          11:40 ص حتى 12:30 م.
+        </p>
       </div>
 
       <div className="mb-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -175,6 +196,10 @@ export function ParentHomePage() {
         {students.map((s) => {
           const latest = latestByStudent[s.id]
           const pending = latest?.status === 'PENDING'
+          const grade = s.classes?.grade ?? s.grade
+          const windowOpen = canSubmitRequest(grade, now)
+          const windowMsg = requestWindowMessage(grade, now)
+          const blockedByTime = !windowOpen
           return (
             <article key={s.id} className="glass-panel p-4">
               <div className="mb-3">
@@ -199,40 +224,29 @@ export function ParentHomePage() {
                 <p className="mb-4 text-sm text-[var(--color-muted)]">لا يوجد طلب سابق لهذا الابن.</p>
               )}
 
-              {confirmStudent?.id === s.id ? (
-                <div className="space-y-3 rounded-xl border border-[rgba(212,175,55,0.5)] p-3">
-                  <p className="font-medium text-[var(--color-text)]">
-                    تأكيد إرسال طلب خروج لـ {s.full_name}؟
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <SecondaryButton type="button" full onClick={() => setConfirmStudent(null)}>
-                      إلغاء
-                    </SecondaryButton>
-                    <PrimaryButton
-                      type="button"
-                      full
-                      disabled={sendingId === s.id}
-                      onClick={() => void sendRequest(s)}
-                    >
-                      {sendingId === s.id ? 'جاري الإرسال...' : 'تأكيد'}
-                    </PrimaryButton>
-                  </div>
-                </div>
-              ) : (
-                <PrimaryButton
-                  type="button"
-                  full
-                  className="min-h-12 text-base"
-                  disabled={sendingId !== null || pending}
-                  onClick={() => {
-                    setRequestError('')
-                    setRequestInfo('')
-                    setConfirmStudent(s)
-                  }}
-                >
-                  {pending ? 'طلب قيد المراجعة' : 'طلب خروج'}
-                </PrimaryButton>
-              )}
+              {blockedByTime && !pending ? (
+                <p className="mb-3 text-sm text-[var(--color-gold-soft)]">{windowMsg}</p>
+              ) : null}
+
+              <PrimaryButton
+                type="button"
+                full
+                className="min-h-12 text-base"
+                disabled={sendingId !== null || pending || blockedByTime}
+                onClick={() => {
+                  setRequestError('')
+                  setRequestInfo('')
+                  void sendRequest(s)
+                }}
+              >
+                {sendingId === s.id
+                  ? 'جاري الإرسال...'
+                  : pending
+                    ? 'طلب قيد المراجعة'
+                    : blockedByTime
+                      ? `متاح ${requestWindowLabel(grade)}`
+                      : 'طلب خروج'}
+              </PrimaryButton>
             </article>
           )
         })}

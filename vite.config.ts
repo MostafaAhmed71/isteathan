@@ -47,9 +47,9 @@ export default defineConfig(({ mode }) => {
         'school-logo.jpeg',
       ],
       manifest: {
-        name: 'خروج — نخبة الشمال الأهلية',
+        name: 'تطبيق خروج ابتدائية نخبة الشمال الأهلية',
         short_name: 'خروج',
-        description: 'نظام خروج — مدارس نخبة الشمال الأهلية',
+        description: 'تطبيق خروج ابتدائية نخبة الشمال الأهلية',
         lang: 'ar',
         dir: 'rtl',
         display: 'standalone',

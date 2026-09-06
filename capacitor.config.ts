@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
   appId: 'sa.isteathan.app',
-  appName: 'خروج',
+  appName: 'تطبيق خروج ابتدائية نخبة الشمال الأهلية',
   webDir: 'dist',
   ios: {
     contentInset: 'always',
