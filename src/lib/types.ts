@@ -1,4 +1,4 @@
-export type UserRole = 'PARENT' | 'CLASS_STAFF' | 'ADMIN'
+export type UserRole = 'PARENT' | 'CLASS_STAFF' | 'ADMIN' | 'DUTY'
 
 export type RequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
 
@@ -108,5 +108,7 @@ export function homePathForRole(role: UserRole): string {
       return '/class'
     case 'ADMIN':
       return '/admin'
+    case 'DUTY':
+      return '/duty'
   }
 }

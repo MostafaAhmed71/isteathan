@@ -26,6 +26,8 @@ import { AdminStaffPage } from './pages/admin/AdminStaffPage'
 import { AdminImportPage } from './pages/admin/AdminImportPage'
 import { AdminGuidePage } from './pages/admin/AdminGuidePage'
 import { AdminWhatsAppPage } from './pages/admin/AdminWhatsAppPage'
+import { DutyLayout } from './pages/duty/DutyLayout'
+import { DutyDeskPage } from './pages/duty/DutyDeskPage'
 
 function NativeLaunchListener() {
   const navigate = useNavigate()
@@ -119,6 +121,17 @@ export default function App() {
           <Route path="import" element={<AdminImportPage />} />
           <Route path="guide" element={<AdminGuidePage />} />
           <Route path="whatsapp" element={<AdminWhatsAppPage />} />
+        </Route>
+
+        <Route
+          path="/duty"
+          element={
+            <ProtectedRoute roles={['DUTY', 'ADMIN']}>
+              <DutyLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<DutyDeskPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

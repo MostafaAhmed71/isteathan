@@ -21,6 +21,7 @@
     "db:apply": "node scripts/apply-migrations.mjs",
     "db:seed": "node scripts/seed.mjs",
     "db:create-admin": "node scripts/create-admin.mjs",
+    "db:create-duty": "node scripts/create-duty.mjs",
     "db:create-class-staff": "node scripts/create-all-class-staff.mjs",
     "whatsapp:gateway": "node whatsapp-gateway/server.mjs",
     "linux:sync": "bash scripts/dev-linux.sh"

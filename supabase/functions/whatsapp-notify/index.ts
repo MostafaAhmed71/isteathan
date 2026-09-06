@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey);
     const { data: profile } = await admin.from("profiles").select("role").eq("id", user.id).maybeSingle();
     const role = profile?.role as string | undefined;
-    if (!role || !["PARENT", "CLASS_STAFF", "ADMIN"].includes(role)) {
+    if (!role || !["PARENT", "CLASS_STAFF", "ADMIN", "DUTY"].includes(role)) {
       return json({ error: "forbidden" }, 403);
     }
 

@@ -63,9 +63,11 @@ export function AdminDashboardPage() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-[var(--color-gold)]">لوحة التحكم</h1>
-        <Link to="/display/lobby">
-          <SecondaryButton type="button">فتح شاشة البهو</SecondaryButton>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/display/lobby">
+            <SecondaryButton type="button">فتح شاشة البهو</SecondaryButton>
+          </Link>
+        </div>
       </div>
       {loading ? <p className="text-[var(--color-muted)]">جاري التحميل...</p> : null}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

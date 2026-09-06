@@ -15,6 +15,7 @@ const links = [
   { to: '/admin/guide', label: 'الدليل' },
   { to: '/admin/whatsapp', label: 'مشرفو الخروج' },
   { to: '/display/lobby', label: 'شاشة البهو' },
+  { to: '/duty', label: 'شاشة المناوب' },
 ]
 
 export function AdminLayout() {

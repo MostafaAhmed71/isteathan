@@ -142,7 +142,7 @@ export function whatsappNotifyPlugin(): Plugin {
             .eq('id', userData.user.id)
             .maybeSingle()
           const role = profile?.role as string | undefined
-          if (!role || !['PARENT', 'CLASS_STAFF', 'ADMIN'].includes(role)) {
+          if (!role || !['PARENT', 'CLASS_STAFF', 'ADMIN', 'DUTY'].includes(role)) {
             json(res, 403, { error: 'forbidden' })
             return
           }
