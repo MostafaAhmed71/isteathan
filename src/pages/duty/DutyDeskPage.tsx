@@ -62,7 +62,7 @@ export function DutyDeskPage() {
       ) {
         setError(msg)
       } else {
-        setError('تعذر إرسال طلب الخروج. تحقق من صلاحيات المناوب ونافذة الوقت.')
+        setError('تعذر إرسال طلب الخروج. تحقق من صلاحيات المناوب.')
       }
       return
     }
