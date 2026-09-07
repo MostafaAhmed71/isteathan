@@ -37,7 +37,7 @@ function vapidReady() {
 async function requireUser(
   admin: SupabaseClient,
   authHeader: string | undefined,
-  roles: Array<'PARENT' | 'CLASS_STAFF' | 'ADMIN'>,
+  roles: Array<'PARENT' | 'CLASS_STAFF' | 'ADMIN' | 'DUTY'>,
 ) {
   if (!authHeader?.startsWith('Bearer ')) return null
   const token = authHeader.slice('Bearer '.length)
@@ -48,7 +48,7 @@ async function requireUser(
     .select('role')
     .eq('id', userData.user.id)
     .maybeSingle()
-  if (!profile || !roles.includes(profile.role as 'PARENT' | 'CLASS_STAFF' | 'ADMIN')) {
+  if (!profile || !roles.includes(profile.role as 'PARENT' | 'CLASS_STAFF' | 'ADMIN' | 'DUTY')) {
     return null
   }
   return userData.user
@@ -176,7 +176,7 @@ export function notifyDecisionPlugin(): Plugin {
 
             const { data: request, error: reqErr } = await admin
               .from('permission_requests')
-              .select('id, status, rejection_reason, guardian_id, students(full_name)')
+              .select('id, status, rejection_reason, guardian_id, reason, students(full_name)')
               .eq('id', requestId)
               .maybeSingle()
 
@@ -186,6 +186,11 @@ export function notifyDecisionPlugin(): Plugin {
             }
             if (request.status !== 'APPROVED' && request.status !== 'REJECTED') {
               json(res, 400, { error: 'not_decided' })
+              return
+            }
+
+            if ((request.reason || '').includes('مناوب') || !request.guardian_id) {
+              json(res, 200, { ok: true, sent: 0, reason: 'no_parent_notify' })
               return
             }
 
@@ -211,7 +216,11 @@ export function notifyDecisionPlugin(): Plugin {
           }
 
           // notify-new-request (parent -> class staff)
-          const user = await requireUser(admin, req.headers.authorization, ['PARENT', 'ADMIN'])
+          const user = await requireUser(admin, req.headers.authorization, [
+            'PARENT',
+            'ADMIN',
+            'DUTY',
+          ])
           if (!user) {
             json(res, 401, { error: 'unauthorized' })
             return
@@ -220,7 +229,7 @@ export function notifyDecisionPlugin(): Plugin {
           const { data: request, error: reqErr } = await admin
             .from('permission_requests')
             .select(
-              'id, status, guardian_id, class_id, students(full_name), classes(staff_profile_id)',
+              'id, status, guardian_id, class_id, reason, students(full_name), classes(staff_profile_id)',
             )
             .eq('id', requestId)
             .maybeSingle()
@@ -230,13 +239,16 @@ export function notifyDecisionPlugin(): Plugin {
             return
           }
           if (request.guardian_id !== user.id && user) {
-            // allow parent owner only (admin also via role check above but still)
             const { data: profile } = await admin
               .from('profiles')
               .select('role')
               .eq('id', user.id)
               .maybeSingle()
-            if (profile?.role !== 'ADMIN' && request.guardian_id !== user.id) {
+            if (
+              profile?.role !== 'ADMIN' &&
+              profile?.role !== 'DUTY' &&
+              request.guardian_id !== user.id
+            ) {
               json(res, 403, { error: 'forbidden' })
               return
             }

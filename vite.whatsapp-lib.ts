@@ -323,6 +323,7 @@ export async function dispatchWhatsAppForRequest(opts: {
   const studentName = student?.full_name ?? 'الطالب'
   const guardianName = guardian?.full_name ?? 'ولي الأمر'
   const parentPhone = guardian?.phone ?? ''
+  const fromDutyDesk = (opts.request.reason ?? '').includes('مناوب')
 
   const jobs: Job[] = []
 
@@ -340,13 +341,14 @@ export async function dispatchWhatsAppForRequest(opts: {
           studentName,
           grade,
           section,
-          guardianName,
+          guardianName: fromDutyDesk ? 'المناوب' : guardianName,
           reason: opts.request.reason ?? '',
           requestTime: opts.request.created_at,
         }),
       })
     }
-    if (parentPhone) {
+    // Duty desk requests must not notify the parent
+    if (parentPhone && !fromDutyDesk) {
       jobs.push({
         recipientType: 'PARENT',
         messageType: 'REQUEST_CREATED',
@@ -356,7 +358,12 @@ export async function dispatchWhatsAppForRequest(opts: {
     }
   }
 
-  if (opts.event === 'decision' && opts.request.status === 'APPROVED' && parentPhone) {
+  if (
+    opts.event === 'decision' &&
+    opts.request.status === 'APPROVED' &&
+    parentPhone &&
+    !fromDutyDesk
+  ) {
     jobs.push({
       recipientType: 'PARENT',
       messageType: 'REQUEST_APPROVED',
@@ -365,7 +372,12 @@ export async function dispatchWhatsAppForRequest(opts: {
     })
   }
 
-  if (opts.event === 'decision' && opts.request.status === 'REJECTED' && parentPhone) {
+  if (
+    opts.event === 'decision' &&
+    opts.request.status === 'REJECTED' &&
+    parentPhone &&
+    !fromDutyDesk
+  ) {
     jobs.push({
       recipientType: 'PARENT',
       messageType: 'REQUEST_REJECTED',

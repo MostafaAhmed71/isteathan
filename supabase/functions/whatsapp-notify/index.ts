@@ -143,6 +143,8 @@ Deno.serve(async (req) => {
     const studentName = student?.full_name ?? "الطالب";
     const guardianName = guardian?.full_name ?? "ولي الأمر";
 
+    const fromDutyDesk = (request.reason || "").includes("مناوب");
+
     type Job = { recipientType: string; messageType: string; phone: string; text: string };
     const jobs: Job[] = [];
 
@@ -163,7 +165,7 @@ Deno.serve(async (req) => {
             `الصف: ${GRADE[grade] ?? grade}`,
             `الفصل: ${section}`,
             "",
-            `ولي الأمر: ${guardianName}`,
+            `ولي الأمر: ${fromDutyDesk ? "المناوب" : guardianName}`,
             "",
             "سبب الخروج:",
             (request.reason || "").trim() || "بدون سبب",
@@ -174,7 +176,7 @@ Deno.serve(async (req) => {
           ].join("\n"),
         });
       }
-      if (guardian?.phone) {
+      if (guardian?.phone && !fromDutyDesk) {
         jobs.push({
           recipientType: "PARENT",
           messageType: "REQUEST_CREATED",
@@ -184,7 +186,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (event === "decision" && request.status === "APPROVED" && guardian?.phone) {
+    if (event === "decision" && request.status === "APPROVED" && guardian?.phone && !fromDutyDesk) {
       jobs.push({
         recipientType: "PARENT",
         messageType: "REQUEST_APPROVED",
@@ -193,7 +195,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (event === "decision" && request.status === "REJECTED" && guardian?.phone) {
+    if (event === "decision" && request.status === "REJECTED" && guardian?.phone && !fromDutyDesk) {
       const reason = (request.rejection_reason || "").trim();
       jobs.push({
         recipientType: "PARENT",

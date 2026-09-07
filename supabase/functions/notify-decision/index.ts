@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
 
     const { data: request, error: reqErr } = await admin
       .from('permission_requests')
-      .select('id, status, rejection_reason, guardian_id, student_id, students(full_name)')
+      .select('id, status, rejection_reason, guardian_id, student_id, reason, students(full_name)')
       .eq('id', requestId)
       .maybeSingle()
 
@@ -68,6 +68,10 @@ Deno.serve(async (req) => {
 
     if (request.status !== 'APPROVED' && request.status !== 'REJECTED') {
       return json({ error: 'not_decided' }, 400)
+    }
+
+    if ((request.reason || '').includes('مناوب') || !request.guardian_id) {
+      return json({ ok: true, sent: 0, reason: 'no_parent_notify' })
     }
 
     const studentName =
@@ -80,10 +84,6 @@ Deno.serve(async (req) => {
         : `تم رفض طلب خروج ${studentName}${
             request.rejection_reason ? `: ${request.rejection_reason}` : '.'
           }`
-
-    if (!request.guardian_id) {
-      return json({ ok: true, sent: 0, reason: 'no_guardian' })
-    }
 
     const { data: subs, error: subErr } = await admin
       .from('push_subscriptions')
