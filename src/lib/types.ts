@@ -40,7 +40,7 @@ export interface Student {
 export interface PermissionRequest {
   id: string
   student_id: string
-  guardian_id: string
+  guardian_id: string | null
   class_id: string
   reason: string
   status: RequestStatus

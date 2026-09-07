@@ -57,7 +57,6 @@ export function DutyDeskPage() {
       const msg = err.message
       if (
         msg.includes('قيد الانتظار') ||
-        msg.includes('ولي أمر') ||
         msg.includes('وقت') ||
         msg.includes('غير')
       ) {
@@ -128,18 +127,12 @@ export function DutyDeskPage() {
                   : classLabel(s.grade, '')}
                 <span className="mx-2 opacity-40">·</span>
                 هوية {s.national_id}
-                {!s.guardian_id ? (
-                  <>
-                    <span className="mx-2 opacity-40">·</span>
-                    <span className="text-[#ffb0b0]">بدون ولي أمر مرتبط</span>
-                  </>
-                ) : null}
               </p>
             </div>
             <PrimaryButton
               type="button"
               className="min-h-12 min-w-[8rem] text-base"
-              disabled={busyId !== null || !s.guardian_id}
+              disabled={busyId !== null}
               onClick={() => void sendExit(s)}
             >
               {busyId === s.id ? 'جاري الإرسال...' : 'خروج'}

@@ -281,7 +281,7 @@ type RequestRow = {
   status: string
   reason: string | null
   rejection_reason: string | null
-  guardian_id: string
+  guardian_id: string | null
   class_id?: string | null
   created_at: string
   students:
@@ -346,15 +346,17 @@ export async function dispatchWhatsAppForRequest(opts: {
         }),
       })
     }
-    jobs.push({
-      recipientType: 'PARENT',
-      messageType: 'REQUEST_CREATED',
-      phoneRaw: parentPhone,
-      text: parentCreatedMessage(studentName),
-    })
+    if (parentPhone) {
+      jobs.push({
+        recipientType: 'PARENT',
+        messageType: 'REQUEST_CREATED',
+        phoneRaw: parentPhone,
+        text: parentCreatedMessage(studentName),
+      })
+    }
   }
 
-  if (opts.event === 'decision' && opts.request.status === 'APPROVED') {
+  if (opts.event === 'decision' && opts.request.status === 'APPROVED' && parentPhone) {
     jobs.push({
       recipientType: 'PARENT',
       messageType: 'REQUEST_APPROVED',
@@ -363,7 +365,7 @@ export async function dispatchWhatsAppForRequest(opts: {
     })
   }
 
-  if (opts.event === 'decision' && opts.request.status === 'REJECTED') {
+  if (opts.event === 'decision' && opts.request.status === 'REJECTED' && parentPhone) {
     jobs.push({
       recipientType: 'PARENT',
       messageType: 'REQUEST_REJECTED',

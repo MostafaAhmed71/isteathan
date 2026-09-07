@@ -81,6 +81,10 @@ Deno.serve(async (req) => {
             request.rejection_reason ? `: ${request.rejection_reason}` : '.'
           }`
 
+    if (!request.guardian_id) {
+      return json({ ok: true, sent: 0, reason: 'no_guardian' })
+    }
+
     const { data: subs, error: subErr } = await admin
       .from('push_subscriptions')
       .select('id, endpoint, p256dh, auth')

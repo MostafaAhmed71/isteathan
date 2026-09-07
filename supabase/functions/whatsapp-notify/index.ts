@@ -174,29 +174,31 @@ Deno.serve(async (req) => {
           ].join("\n"),
         });
       }
-      jobs.push({
-        recipientType: "PARENT",
-        messageType: "REQUEST_CREATED",
-        phone: guardian?.phone ?? "",
-        text: `تم استقبال الطلب`,
-      });
+      if (guardian?.phone) {
+        jobs.push({
+          recipientType: "PARENT",
+          messageType: "REQUEST_CREATED",
+          phone: guardian.phone,
+          text: `تم استقبال الطلب`,
+        });
+      }
     }
 
-    if (event === "decision" && request.status === "APPROVED") {
+    if (event === "decision" && request.status === "APPROVED" && guardian?.phone) {
       jobs.push({
         recipientType: "PARENT",
         messageType: "REQUEST_APPROVED",
-        phone: guardian?.phone ?? "",
+        phone: guardian.phone,
         text: `ابنك في الطريق إليك`,
       });
     }
 
-    if (event === "decision" && request.status === "REJECTED") {
+    if (event === "decision" && request.status === "REJECTED" && guardian?.phone) {
       const reason = (request.rejection_reason || "").trim();
       jobs.push({
         recipientType: "PARENT",
         messageType: "REQUEST_REJECTED",
-        phone: guardian?.phone ?? "",
+        phone: guardian.phone,
         text: [
           `تم رفض طلب خروج الطالب ${studentName}.`,
           "",
