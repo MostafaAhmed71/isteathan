@@ -1,5 +1,8 @@
 /** Parent request submission windows (Asia/Riyadh school time). */
 
+/** Set true to restore school-hours restriction in the UI. */
+export const REQUEST_TIME_WINDOW_ENABLED = false
+
 export const SCHOOL_TIME_ZONE = 'Asia/Riyadh'
 
 /** Shared end of the daily submission window (12:30). */
@@ -58,11 +61,13 @@ export function riyadhMinutesNow(at: Date = new Date()): number {
 }
 
 export function canSubmitRequest(grade: number, at: Date = new Date()): boolean {
+  if (!REQUEST_TIME_WINDOW_ENABLED) return true
   const minutes = riyadhMinutesNow(at)
   return minutes >= requestOpenMinutes(grade) && minutes < REQUEST_CLOSE_MINUTES
 }
 
 export function requestWindowMessage(grade: number, at: Date = new Date()): string | null {
+  if (!REQUEST_TIME_WINDOW_ENABLED) return null
   if (canSubmitRequest(grade, at)) return null
   const band = gradeBandLabel(grade)
   const window = requestWindowLabel(grade)

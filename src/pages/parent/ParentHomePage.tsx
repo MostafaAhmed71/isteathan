@@ -13,6 +13,7 @@ import { getNotificationPermission, permissionHelpMessage } from '../../lib/noti
 import { isNativeApp } from '../../lib/native'
 import { enableParentPushNotifications, notifyStaffOfNewRequest } from '../../lib/push'
 import {
+  REQUEST_TIME_WINDOW_ENABLED,
   canSubmitRequest,
   isRequestWindowError,
   requestWindowLabel,
@@ -159,10 +160,12 @@ export function ParentHomePage() {
         <ErrorBox message={requestError || error} />
         {requestInfo ? <p className="text-sm text-[var(--color-gold-soft)]">{requestInfo}</p> : null}
         {notifyHint ? <p className="text-sm text-[var(--color-gold-soft)]">{notifyHint}</p> : null}
-        <p className="rounded-xl border border-[rgba(212,175,55,0.35)] px-3 py-2 text-sm text-[var(--color-muted)]">
-          مواعيد تقديم الطلبات (توقيت الرياض): الصفوف الأولية من 11:10 ص حتى 12:30 م، والصفوف العليا من
-          11:40 ص حتى 12:30 م.
-        </p>
+        {REQUEST_TIME_WINDOW_ENABLED ? (
+          <p className="rounded-xl border border-[rgba(212,175,55,0.35)] px-3 py-2 text-sm text-[var(--color-muted)]">
+            مواعيد تقديم الطلبات (توقيت الرياض): الصفوف الأولية من 11:10 ص حتى 12:30 م، والصفوف العليا
+            من 11:40 ص حتى 12:30 م.
+          </p>
+        ) : null}
       </div>
 
       <div className="mb-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
