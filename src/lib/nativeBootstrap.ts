@@ -58,6 +58,9 @@ export async function bootstrapNativeApp(): Promise<void> {
 
   void App.addListener('appStateChange', ({ isActive }) => {
     if (!isActive) return
+    void import('./supabase').then(({ supabase }) => {
+      void supabase.auth.refreshSession()
+    })
     void consumeNativeLaunchPath().then((path) => {
       if (!path || window.location.pathname === path) return
       window.dispatchEvent(new CustomEvent('isteathan:navigate', { detail: path }))

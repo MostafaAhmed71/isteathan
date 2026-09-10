@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom'
 import { SchoolBrand } from '../components/SchoolBrand'
 import { ErrorBox, PrimaryButton, SecondaryButton, TextField } from '../components/ui'
 import { useAuth } from '../lib/auth'
+import { getRememberLogin } from '../lib/authStorage'
 
 export function LoginPage() {
   const { signIn } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(() => getRememberLogin())
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -19,7 +21,7 @@ export function LoginPage() {
       if (!email.trim() || !password) {
         throw new Error('يرجى إدخال اسم الدخول وكلمة المرور.')
       }
-      await signIn(email.trim(), password)
+      await signIn(email.trim(), password, rememberMe)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'بيانات الدخول غير صحيحة.')
     } finally {
@@ -54,6 +56,15 @@ export function LoginPage() {
             autoComplete="current-password"
             required
           />
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-[var(--color-text)]">
+            <input
+              type="checkbox"
+              className="size-4 accent-[var(--color-gold)]"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            تذكرني (البقاء مسجّل الدخول)
+          </label>
           <ErrorBox message={error} />
           <PrimaryButton type="submit" full disabled={submitting}>
             {submitting ? 'جاري الدخول...' : 'دخول'}

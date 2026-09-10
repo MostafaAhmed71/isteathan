@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
+import { setRememberLogin } from './authStorage'
 import { supabase } from './supabase'
 import { syncBackgroundMonitor, stopBackgroundMonitor } from './backgroundMonitor'
 import type { Profile, UserRole } from './types'
@@ -25,7 +26,7 @@ interface AuthContextValue {
   user: User | null
   profile: Profile | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<void>
+  signIn: (email: string, password: string, rememberMe?: boolean) => Promise<void>
   signUpParent: (input: ParentSignUpInput) => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
@@ -69,7 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       void syncBackgroundMonitor(p)
     } catch (err) {
       console.error(err)
-      setProfile(null)
+      // Keep the session on transient profile errors so a flaky network
+      // does not force the user back to the login screen.
       void stopBackgroundMonitor()
     }
   }, [])
@@ -77,15 +79,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return
-      loadSession(data.session).finally(() => {
+    void (async () => {
+      try {
+        const { data } = await supabase.auth.getSession()
+        let next = data.session
+        // Refresh expired access tokens while the refresh token is still valid.
+        if (next?.refresh_token) {
+          const { data: refreshed } = await supabase.auth.refreshSession()
+          if (refreshed.session) next = refreshed.session
+        }
+        if (!mounted) return
+        await loadSession(next)
+      } finally {
         if (mounted) setLoading(false)
-      })
-    })
+      }
+    })()
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
-      void loadSession(next)
+      // Defer async work to avoid Supabase auth lock deadlocks.
+      setTimeout(() => {
+        if (!mounted) return
+        void loadSession(next)
+      }, 0)
     })
 
     return () => {
@@ -94,7 +109,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [loadSession])
 
-  const signIn = useCallback(async (email: string, password: string) => {
+  // Retry profile load if we have a session but profile fetch failed earlier.
+  useEffect(() => {
+    if (loading || !session?.user || profile) return
+    const t = window.setTimeout(() => {
+      void loadSession(session)
+    }, 1500)
+    return () => window.clearTimeout(t)
+  }, [loading, session, profile, loadSession])
+
+  const signIn = useCallback(async (email: string, password: string, rememberMe = true) => {
+    await setRememberLogin(rememberMe)
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password,
@@ -105,6 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signUpParent = useCallback(async (input: ParentSignUpInput) => {
+    await setRememberLogin(true)
     const email = input.email.trim().toLowerCase()
     const { data, error } = await supabase.auth.signUp({
       email,

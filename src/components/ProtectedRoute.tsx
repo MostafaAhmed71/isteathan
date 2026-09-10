@@ -20,8 +20,16 @@ export function ProtectedRoute({
     )
   }
 
-  if (!session || !profile) {
+  if (!session) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center text-[var(--color-muted)]">
+        جاري استعادة الجلسة...
+      </div>
+    )
   }
 
   if (!roles.includes(profile.role)) {
