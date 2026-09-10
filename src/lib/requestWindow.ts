@@ -1,7 +1,7 @@
 /** Parent request submission windows (Asia/Riyadh school time). */
 
-/** Set true to restore school-hours restriction in the UI. */
-export const REQUEST_TIME_WINDOW_ENABLED = false
+/** Set true to enforce school-hours restriction in the UI. */
+export const REQUEST_TIME_WINDOW_ENABLED = true
 
 export const SCHOOL_TIME_ZONE = 'Asia/Riyadh'
 
