@@ -13,6 +13,7 @@ const links = [
   { to: '/admin/import', label: 'استيراد' },
   { to: '/admin/guide', label: 'الدليل' },
   { to: '/admin/whatsapp', label: 'مشرفو الاستئذان' },
+  { to: '/display/lobby', label: 'شاشة البهو' },
 ]
 
 export function AdminLayout() {

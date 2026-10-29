@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">استئذان — عرض الفصل</string>
+    <string name="login_title">تسجيل دخول مشرف الفصل</string>
+    <string name="login_hint">استخدم نفس بيانات دخول لوحة الفصل</string>
+    <string name="email">اسم الدخول / البريد</string>
+    <string name="password">كلمة المرور</string>
+    <string name="login">دخول</string>
+    <string name="logout">تسجيل الخروج</string>
+    <string name="start_service">تفعيل النافذة العائمة</string>
+    <string name="stop_service">إيقاف المراقبة</string>
+    <string name="overlay_permission">منح صلاحية الظهور فوق التطبيقات</string>
+    <string name="notif_permission">السماح بالإشعارات</string>
+    <string name="service_running">المراقبة تعمل في الخلفية</string>
+    <string name="service_stopped">المراقبة متوقفة</string>
+    <string name="channel_name">مراقبة طلبات الاستئذان</string>
+    <string name="channel_desc">يُبقي التطبيق يستمع لطلبات الاستئذان الجديدة</string>
+    <string name="notif_title">استئذان — مراقبة الفصل</string>
+    <string name="notif_text">بانتظار طلبات جديدة…</string>
+    <string name="dismiss">تم الاطلاع</string>
+    <string name="new_request">طلب استئذان جديد</string>
+    <string name="approved">تمت الموافقة</string>
+    <string name="rejected">تم الرفض</string>
+    <string name="late">متأخر</string>
+    <string name="waiting">انتظار</string>
+    <string name="student_name">اسم الطالب</string>
+    <string name="class_label">الفصل</string>
+    <string name="status_ok">جاهز للتجربة على شاشة واحدة</string>
+</resources>

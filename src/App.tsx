@@ -7,8 +7,11 @@ import { ParentRegisterPage } from './pages/ParentRegisterPage'
 import { SetupAdminPage } from './pages/SetupAdminPage'
 import { ParentLayout } from './pages/parent/ParentLayout'
 import { ParentHomePage } from './pages/parent/ParentHomePage'
+import { ParentChildrenPage } from './pages/parent/ParentChildrenPage'
 import { ParentRequestsPage } from './pages/parent/ParentRequestsPage'
 import { ClassDashboardPage } from './pages/class/ClassDashboardPage'
+import { ClassDisplayPage } from './pages/display/ClassDisplayPage'
+import { LobbyDisplayPage } from './pages/display/LobbyDisplayPage'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminRequestsPage } from './pages/admin/AdminRequestsPage'
@@ -52,6 +55,7 @@ export default function App() {
           }
         >
           <Route index element={<ParentHomePage />} />
+          <Route path="children" element={<ParentChildrenPage />} />
           <Route path="requests" element={<ParentRequestsPage />} />
         </Route>
 
@@ -60,6 +64,22 @@ export default function App() {
           element={
             <ProtectedRoute roles={['CLASS_STAFF']}>
               <ClassDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/display/class"
+          element={
+            <ProtectedRoute roles={['CLASS_STAFF']}>
+              <ClassDisplayPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/display/lobby"
+          element={
+            <ProtectedRoute roles={['ADMIN']}>
+              <LobbyDisplayPage />
             </ProtectedRoute>
           }
         />

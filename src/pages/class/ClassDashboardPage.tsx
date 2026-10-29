@@ -1,4 +1,5 @@
 import { type FormEvent, useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Toast } from '../../components/Toast'
 import { useAuth } from '../../lib/auth'
 import {
@@ -200,6 +201,9 @@ export function ClassDashboardPage() {
         subtitle="طلبات الاستئذان"
         actions={
           <div className="flex flex-wrap gap-2">
+            <Link to="/display/class">
+              <SecondaryButton type="button">شاشة العرض</SecondaryButton>
+            </Link>
             {!notifyReady ? (
               <SecondaryButton type="button" onClick={() => void enableNotifications()}>
                 تفعيل الإشعارات

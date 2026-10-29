@@ -1,19 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { RequestStatusTracker } from '../../components/RequestStatusTracker'
-import {
-  EmptyState,
-  PageShell,
-  SecondaryButton,
-  StatusBadge,
-} from '../../components/ui'
+import { EmptyState, PageShell, StatusBadge } from '../../components/ui'
 import { useAuth } from '../../lib/auth'
 import { supabase } from '../../lib/supabase'
-import {
-  classLabel,
-  formatDateTime,
-  type PermissionRequest,
-} from '../../lib/types'
+import { classLabel, formatDateTime, type PermissionRequest } from '../../lib/types'
 
 export function ParentRequestsPage() {
   const { profile } = useAuth()
@@ -62,15 +52,7 @@ export function ParentRequestsPage() {
   }, [profile])
 
   return (
-    <PageShell
-      title="سجل الطلبات"
-      subtitle="تابع حالة كل طلب خطوة بخطوة"
-      actions={
-        <Link to="/parent">
-          <SecondaryButton type="button">رجوع للرئيسية</SecondaryButton>
-        </Link>
-      }
-    >
+    <PageShell title="سجل الطلبات" subtitle="تابع حالة كل طلب خطوة بخطوة">
       {loading ? <p className="text-[var(--color-muted)]">جاري التحميل...</p> : null}
       {error ? <p className="mb-4 text-[#ffb0b0]">{error}</p> : null}
       {!loading && requests.length === 0 ? (
@@ -99,10 +81,8 @@ export function ParentRequestsPage() {
               rejectionReason={r.rejection_reason}
             />
 
-            <p className="mt-4 border-t border-[rgba(212,175,55,0.25)] pt-3 text-sm text-[var(--color-muted)]">
-              {r.reason?.trim() ? `السبب: ${r.reason}` : 'بدون سبب'}
-              <span className="mx-2 opacity-40">·</span>
-              {formatDateTime(r.created_at)}
+            <p className="mt-3 text-xs text-[var(--color-muted)]">
+              وقت الطلب: {formatDateTime(r.created_at)}
             </p>
           </article>
         ))}

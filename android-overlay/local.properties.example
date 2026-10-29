@@ -1,0 +1,6 @@
+## Copy to local.properties and fill values (or run scripts/sync-supabase-config.sh)
+## sdk.dir is usually auto-written by Android Studio.
+
+# sdk.dir=/home/YOU/Android/Sdk
+supabase.url=https://YOUR_PROJECT.supabase.co
+supabase.anonKey=YOUR_ANON_KEY

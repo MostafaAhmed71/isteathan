@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { SecondaryButton } from '../../components/ui'
 import { supabase } from '../../lib/supabase'
 
 interface Stats {
@@ -59,7 +61,12 @@ export function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold text-[var(--color-gold)]">لوحة التحكم</h1>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold text-[var(--color-gold)]">لوحة التحكم</h1>
+        <Link to="/display/lobby">
+          <SecondaryButton type="button">فتح شاشة البهو</SecondaryButton>
+        </Link>
+      </div>
       {loading ? <p className="text-[var(--color-muted)]">جاري التحميل...</p> : null}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (

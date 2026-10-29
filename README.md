@@ -55,13 +55,15 @@ npm run dev
 
 يفتح: http://127.0.0.1:5173/
 
-> **مهم — `/mnt/E` (NTFS):** `npm install` و`vite` يفشلون هناك (`vite: not found` / `esbuild EACCES`).
-> `npm run dev` و`npm run build` ينسخان المشروع تلقائيًا إلى `~/work/isteathan` ويشغّلان منه.
->
-> أو مباشرة:
-> ```bash
-> cd ~/work/isteathan && npm run vite:dev
-> ```
+نفس الأوامر تعمل على ويندوز ولينكس:
+
+- **ويندوز:** Vite يعمل محليًا في مجلد المشروع (`npm run vite:dev` / `vite:build`).
+- **لينكس — `/mnt/E` (NTFS):** `npm install` و`vite` يفشلون هناك (`vite: not found` / `esbuild EACCES`). `npm run dev` و`npm run build` ينسخان المشروع تلقائيًا إلى `~/work/isteathan` ويشغّلان منه.
+
+أو مباشرة على لينكس:
+```bash
+cd ~/work/isteathan && npm run vite:dev
+```
 
 ### 4) إنشاء الحسابات من لوحة الإدارة
 
