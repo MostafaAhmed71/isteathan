@@ -27,12 +27,12 @@ function normalizeWhatsAppNumber(raw: string): string | null {
 }
 
 const GRADE: Record<number, string> = {
-  1: "الأول",
-  2: "الثاني",
-  3: "الثالث",
-  4: "الرابع",
-  5: "الخامس",
-  6: "السادس",
+  1: "الأول الابتدائي",
+  2: "الثاني الابتدائي",
+  3: "الثالث الابتدائي",
+  4: "الرابع الابتدائي",
+  5: "الخامس الابتدائي",
+  6: "السادس الابتدائي",
 };
 
 function riyadhWeekday(at = new Date()) {

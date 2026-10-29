@@ -35,6 +35,18 @@ export interface Student {
   created_at: string
   updated_at: string
   classes?: SchoolClass | null
+  profiles?: Pick<Profile, 'id' | 'full_name' | 'phone' | 'national_id'> | null
+}
+
+export function normalizeArabic(text: string): string {
+  if (!text) return ''
+  return text
+    .toLowerCase()
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .replace(/[\u064B-\u065F]/g, '')
+    .trim()
 }
 
 export interface PermissionRequest {
@@ -55,12 +67,12 @@ export interface PermissionRequest {
 }
 
 export const GRADE_LABELS: Record<number, string> = {
-  1: 'الأول',
-  2: 'الثاني',
-  3: 'الثالث',
-  4: 'الرابع',
-  5: 'الخامس',
-  6: 'السادس',
+  1: 'الأول الابتدائي',
+  2: 'الثاني الابتدائي',
+  3: 'الثالث الابتدائي',
+  4: 'الرابع الابتدائي',
+  5: 'الخامس الابتدائي',
+  6: 'السادس الابتدائي',
 }
 
 export const STATUS_LABELS: Record<RequestStatus, string> = {

@@ -1,12 +1,13 @@
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useMemo, useState } from 'react'
 import { createManagedUser } from '../../lib/adminCreateUser'
+import { deleteManagedUser } from '../../lib/adminDeleteUser'
 import { supabase } from '../../lib/supabase'
-import { classLabel, type Profile, type Student } from '../../lib/types'
+import { classLabel, normalizeArabic, type Profile, type Student } from '../../lib/types'
 import {
+  DangerButton,
   EmptyState,
   ErrorBox,
   PrimaryButton,
-  SecondaryButton,
   TextField,
 } from '../../components/ui'
 
@@ -20,6 +21,8 @@ export function AdminParentsPage() {
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const [form, setForm] = useState({
     national_id: '',
     full_name: '',
@@ -42,6 +45,22 @@ export function AdminParentsPage() {
   useEffect(() => {
     void reload()
   }, [])
+
+  const filteredParents = useMemo(() => {
+    const q = normalizeArabic(searchQuery)
+    if (!q) return parents
+    return parents.filter((p) => {
+      const nameMatch = normalizeArabic(p.full_name).includes(q)
+      const nationalIdMatch = (p.national_id || '').includes(searchQuery.trim())
+      const phoneMatch = (p.phone || '').includes(searchQuery.trim())
+      const childMatch = (p.students || []).some(
+        (s) =>
+          normalizeArabic(s.full_name).includes(q) ||
+          (s.national_id || '').includes(searchQuery.trim()),
+      )
+      return nameMatch || nationalIdMatch || phoneMatch || childMatch
+    })
+  }, [parents, searchQuery])
 
   async function onCreate(e: FormEvent) {
     e.preventDefault()
@@ -73,10 +92,39 @@ export function AdminParentsPage() {
     }
   }
 
-  async function toggleActive(p: Profile) {
-    await supabase.from('profiles').update({ is_active: !p.is_active }).eq('id', p.id)
-    await reload()
+  async function removeParent(p: ParentRow) {
+    setError('')
+    setInfo('')
+    const kids = (p.students ?? []).length
+    const kidsNote =
+      kids > 0
+        ? `\nسيُفك ربط ${kids} من الأبناء ويُحذف طلبات الاستئذان المرتبطة بالحساب.`
+        : ''
+    if (
+      !window.confirm(
+        `حذف ولي الأمر «${p.full_name}» نهائيًا؟ لا يمكن التراجع.${kidsNote}`,
+      )
+    ) {
+      return
+    }
+
+    setDeletingId(p.id)
+    try {
+      const result = await deleteManagedUser(p.id)
+      if (result.failures.length) {
+        setError(result.failures.map((f) => f.error).join(' · '))
+      } else {
+        setInfo(`تم حذف حساب «${p.full_name}».`)
+      }
+      await reload()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'تعذر حذف الحساب.')
+    } finally {
+      setDeletingId(null)
+    }
   }
+
+  const busy = submitting || deletingId !== null
 
   return (
     <div className="space-y-4">
@@ -114,7 +162,7 @@ export function AdminParentsPage() {
           required
         />
         <div className="flex items-end">
-          <PrimaryButton type="submit" full disabled={submitting}>
+          <PrimaryButton type="submit" full disabled={busy}>
             {submitting ? 'جاري الإنشاء...' : 'إنشاء حساب ولي أمر'}
           </PrimaryButton>
         </div>
@@ -124,17 +172,48 @@ export function AdminParentsPage() {
         </div>
       </form>
 
+      {/* قسم البحث لأولياء الأمور */}
+      <div className="glass-panel p-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[rgba(212,175,55,0.2)] pb-2">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-lg text-[var(--color-gold)]">قائمة أولياء الأمور</span>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[rgba(212,175,55,0.15)] text-[var(--color-gold)]">
+              {filteredParents.length} {filteredParents.length !== parents.length ? `من أصل ${parents.length}` : 'ولي أمر'}
+            </span>
+          </div>
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="text-xs text-[var(--color-gold-soft)] hover:underline cursor-pointer"
+            >
+              مسح البحث
+            </button>
+          )}
+        </div>
+
+        <div>
+          <TextField
+            label="بحث باسم ولي الأمر أو رقم الهوية أو الجوال أو اسم الطالب"
+            placeholder="اكتب اسم ولي الأمر للبحث..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
+
       {loading ? <p className="text-[var(--color-muted)]">جاري التحميل...</p> : null}
-      {!loading && parents.length === 0 ? <EmptyState>لا يوجد أولياء أمور.</EmptyState> : null}
+      {!loading && parents.length === 0 ? <EmptyState>لا يوجد أولياء أمور مضافون بعد.</EmptyState> : null}
+      {!loading && parents.length > 0 && filteredParents.length === 0 ? (
+        <EmptyState>لا يوجد أولياء أمور مطابقون للبحث «{searchQuery}»</EmptyState>
+      ) : null}
 
       <div className="space-y-3">
-        {parents.map((p) => (
+        {filteredParents.map((p) => (
           <article key={p.id} className="glass-panel glass-interactive p-4">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
-                <h2 className="font-bold">
-                  {p.full_name} {!p.is_active ? '(غير نشط)' : ''}
-                </h2>
+                <h2 className="font-bold">{p.full_name}</h2>
                 <p className="text-sm text-[var(--color-muted)]">
                   {p.national_id} {p.phone ? `— ${p.phone}` : ''}
                 </p>
@@ -148,9 +227,13 @@ export function AdminParentsPage() {
                   ))}
                 </ul>
               </div>
-              <SecondaryButton type="button" onClick={() => void toggleActive(p)}>
-                {p.is_active ? 'تعطيل' : 'تفعيل'}
-              </SecondaryButton>
+              <DangerButton
+                type="button"
+                disabled={busy}
+                onClick={() => void removeParent(p)}
+              >
+                {deletingId === p.id ? 'جاري الحذف...' : 'حذف'}
+              </DangerButton>
             </div>
           </article>
         ))}

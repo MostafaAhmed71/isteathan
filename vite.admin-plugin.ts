@@ -39,7 +39,7 @@ async function requireAdmin(admin: SupabaseClient, authHeader: string | undefine
   return userData.user
 }
 
-async function deleteClassStaffUser(admin: SupabaseClient, userId: string, callerId: string) {
+async function deleteManagedProfile(admin: SupabaseClient, userId: string, callerId: string) {
   if (userId === callerId) {
     return { ok: false as const, error: 'لا يمكن حذف حسابك الحالي.' }
   }
@@ -53,12 +53,17 @@ async function deleteClassStaffUser(admin: SupabaseClient, userId: string, calle
   if (!profile) {
     return { ok: false as const, error: 'الحساب غير موجود.' }
   }
-  if (profile.role !== 'CLASS_STAFF') {
-    return { ok: false as const, error: 'يُسمح بحذف حسابات الفصول فقط.' }
+  if (profile.role !== 'CLASS_STAFF' && profile.role !== 'PARENT') {
+    return { ok: false as const, error: 'يُسمح بحذف حسابات الفصول وأولياء الأمور فقط.' }
   }
 
-  await admin.from('classes').update({ staff_profile_id: null }).eq('staff_profile_id', userId)
-  await admin.from('permission_requests').update({ decided_by: null }).eq('decided_by', userId)
+  if (profile.role === 'CLASS_STAFF') {
+    await admin.from('classes').update({ staff_profile_id: null }).eq('staff_profile_id', userId)
+    await admin.from('permission_requests').update({ decided_by: null }).eq('decided_by', userId)
+  } else {
+    await admin.from('students').update({ guardian_id: null }).eq('guardian_id', userId)
+    await admin.from('permission_requests').delete().eq('guardian_id', userId)
+  }
   // Best-effort: table may be missing if migration 008 not applied yet.
   await admin.from('push_subscriptions').delete().eq('user_id', userId)
 
@@ -149,7 +154,7 @@ export function adminApiPlugin(): Plugin {
           const failures: Array<{ id: string; error: string }> = []
 
           for (const id of targets) {
-            const result = await deleteClassStaffUser(admin, id, caller.id)
+            const result = await deleteManagedProfile(admin, id, caller.id)
             if (result.ok) deleted.push(id)
             else failures.push({ id, error: result.error })
           }

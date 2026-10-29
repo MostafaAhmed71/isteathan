@@ -55,8 +55,10 @@ npm run dev
 
 يفتح: http://127.0.0.1:5173/
 
-> **مهم — `/mnt/E` (NTFS):** `npm install` و`vite` يفشلون هناك (`vite: not found` / `esbuild EACCES`).
-> `npm run dev` و`npm run build` ينسخان المشروع تلقائيًا إلى `~/work/isteathan` ويشغّلان منه.
+على ويندوز يعمل `npm run dev` و`npm run build` مباشرة عبر Node (بدون bash).
+
+> **مهم — `/mnt/E` (NTFS في WSL):** `npm install` و`vite` قد يفشلون هناك (`vite: not found` / `esbuild EACCES`).
+> في هذه الحالة تُنسَخ المشروع تلقائيًا إلى `~/work/isteathan` ويُشغَّل منه.
 >
 > أو مباشرة:
 > ```bash

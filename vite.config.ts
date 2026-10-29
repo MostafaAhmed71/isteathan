@@ -77,9 +77,8 @@ export default defineConfig(({ mode }) => {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
       devOptions: {
-        // Needed so mobile can show notifications via ServiceWorkerRegistration.showNotification
-        enabled: true,
-        type: 'module',
+        // Never enable SW in Vite dev — CacheFirst poisons HMR and causes duplicate React.
+        enabled: false,
       },
     }),
   ],

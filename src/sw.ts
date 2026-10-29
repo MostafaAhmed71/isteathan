@@ -16,12 +16,22 @@ clientsClaim()
 
 void self.skipWaiting()
 
-// App shell assets — never API / student data
+function isDevOrViteAsset(url: URL): boolean {
+  return (
+    url.pathname.startsWith('/@') ||
+    url.pathname.startsWith('/src/') ||
+    url.pathname.includes('/node_modules/') ||
+    url.pathname.includes('/.vite/')
+  )
+}
+
+// App shell assets — never API / student data, never Vite HMR modules
 registerRoute(
-  ({ request }) =>
-    request.destination === 'style' ||
-    request.destination === 'script' ||
-    request.destination === 'worker',
+  ({ request, url }) =>
+    !isDevOrViteAsset(url) &&
+    (request.destination === 'style' ||
+      request.destination === 'script' ||
+      request.destination === 'worker'),
   new CacheFirst({
     cacheName: 'isteathan-app-shell',
     plugins: [

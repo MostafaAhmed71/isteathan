@@ -7,7 +7,9 @@ import { ParentRegisterPage } from './pages/ParentRegisterPage'
 import { SetupAdminPage } from './pages/SetupAdminPage'
 import { ParentLayout } from './pages/parent/ParentLayout'
 import { ParentHomePage } from './pages/parent/ParentHomePage'
+import { ParentChildrenPage } from './pages/parent/ParentChildrenPage'
 import { ParentRequestsPage } from './pages/parent/ParentRequestsPage'
+import { ParentGuidePage } from './pages/parent/ParentGuidePage'
 import { ClassDashboardPage } from './pages/class/ClassDashboardPage'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
@@ -52,7 +54,9 @@ export default function App() {
           }
         >
           <Route index element={<ParentHomePage />} />
+          <Route path="children" element={<ParentChildrenPage />} />
           <Route path="requests" element={<ParentRequestsPage />} />
+          <Route path="guide" element={<ParentGuidePage />} />
         </Route>
 
         <Route
